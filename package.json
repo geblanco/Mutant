@@ -1,0 +1,16 @@
+{
+  "name": "Mutant",
+  "version": "0.1.0",
+  "main": "main.js",
+  "dependencies": {
+    "async": "*",
+    "jquery": "2.1.4",
+    "librsvg": "*",
+    "lodash": "*",
+    "mkdirp": "*",
+    "upath": "*"
+  },
+  "devDependencies": {
+    "electron-packager": "^5.1.0"
+  }
+}
