@@ -37,6 +37,13 @@ My front-end skill-set is poor, any support there would be much appreciated.
 ## Motivation
 After using qdore's mutate for almost a year and customizing it a lot I miss some functionality so I decided to make my own version of it.
 
+## Dependencies
+* nodejs
+* electron (atom shell)
+* pkg-config
+* gtk+-3.0
+* librsvg2-dev
+
 ## Roadmap
 * Install script (by now just set things up)
 * Settings window

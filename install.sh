@@ -3,6 +3,7 @@
 [[ "$(node -v)" != "v5."* && "$(node -v)" != "v4."* ]] && echo "Please install a newer version of node and continue." && exit
 [[ "$(electron -v)" != "v0.36."* ]] && echo "Please install a newer version of electron and continue." && exit
 
+# Install dependencies
 sudo apt-get install -y pkg-config gtk+-3.0 librsvg2-dev
 sudo npm install
 cd install
@@ -16,6 +17,9 @@ cd install
 	echo "{\"theme\": \"Humanity\"}" > ../misc/setup.json
 	echo "{  \"command\": \"launch\", \"shortcut\": \"Ctrl+Space\" }" > ../misc/shortcuts.json
 cd ..
+# Add necessary folders
+[[ -d ./cached ]] || mkdir ./cached
+
 # Clean
 [[ -f ./back/listApps ]] && rm ./back/listApps
 mv ./install/listApps ./back/listApps
