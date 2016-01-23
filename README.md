@@ -48,3 +48,6 @@ After using qdore's mutate for almost a year and customized it a lot I miss some
 * Translator
 * Maps??
 * Web preview (Apple's spotlight style)
+
+## Notes
+One of the problems of mutate is theme detection (used for icon selection), which is a fail of gtk lib, here I solved it passing the name of the current theme by parameter. In a near future there shold be a script for detecting theme (which depends on the distro)
