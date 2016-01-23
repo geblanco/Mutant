@@ -91,6 +91,12 @@ var _netSearch = function( exec, query ){
 
 }
 
+var _browseLaunch = function( exec, query ){
+	// Unwrap object, link is on subtext
+	query = exec.subText;
+	_netGo( exec, query );
+}
+
 // Wrapper for deep copy, returns a new allocated object
 // avoiding overwrittings, call exceptionally
 var _getInternalApp = function( app ){
@@ -131,6 +137,10 @@ var _internalApps = {
 	'netSearch': {
 		'wrapper': _in_apps['netSearch']
 		, fn: _netSearch
+	},
+	'browseHistory': {
+		'wrapper': _in_apps['browseHistory']
+		, fn: _browseLaunch
 	}
 }
 
@@ -169,6 +179,23 @@ var _search = function( query, callback ){
 			if( _strSearch( Q.REG2, query ) !== -1 || Q.REG.test( query ) ){
 				//console.log('Match with', Q.REG2);
 				matches.push( _internalApps[ Q.APP ].wrapper );
+			}
+		})
+		// Broswser History files
+		global.db.query(query, function( err, results ){
+			if( !err ){
+				//console.log('from scripts db query', results);
+				// Deep copy
+				var aux = _getInternalApp('browseHistory');
+				results.forEach(function( result ){
+					// Come in the form:
+					// url: ...
+					// title: ...
+					// browser: ...
+					aux.appName = result.title;
+					aux.subText = result.url;
+					bindings.send( [aux] );
+				});
 			}
 		})
 		// Apps
