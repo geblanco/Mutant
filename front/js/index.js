@@ -20,7 +20,7 @@ var _constructItem = function( selected, id, item ){
 		"text": item.subText
 	}))*/
 	var path = item.iconPath.split('/');
-	console.log(path);
+	//console.log(path);
 	path = path.length < 2 ? _defaultIconPath : item.iconPath;
 
 	return (
@@ -33,7 +33,7 @@ var _constructItem = function( selected, id, item ){
 			}).append(
 				$('<a/>', {
 					"href": '#',
-					"class": 'img-rounded'//img-responsive'
+					"class": 'img-rounded'
 				}).append(
 					$('<img/>', {
 						"src": path,
@@ -48,16 +48,40 @@ var _constructItem = function( selected, id, item ){
 			}).append(
 				$('<h4/>', {
 					"class": 'list-group-item-heading',
-					"text": item.appName
+					"text": item.appName.length < 80? item.appName : item.appName.substring(0, 80) + '...'
 				})
 			).append(
 				$('<p/>', {
 					"class": 'list-group-item-text',
-					"text": item.subText === '__unknown__' ? '' : item.subText,
+					"text": item.subText === '__unknown__' ? '' : item.subText.length < 80? item.subText : item.subText.substring(0, 80) + '...',
 				})
 			)
 		)
 	);
+}
+
+var _scroll = function( direction ){
+	if( direction === 'UP' ){
+		if( selected-1 >= 0 ){
+			$('[id^="li-"').removeClass('active');
+			$('#li-' + --selected).addClass('active');
+			var elem = $('#li-' + selected);
+			//console.log('calc', elem.offset().top - elem.height());
+			if( elem.offset().top - elem.height() <=  (window.outerHeight + $(window).scrollTop()) ){
+				window.scrollBy(0, -(elem.height() + elem.height()/2) + 4);
+			}
+		}
+	}else{
+		if( selected+1 < $('.list-group .list-group-item').length ){// 0 based idx
+			$('[id^="li-"').removeClass('active');
+			$('#li-' + ++selected).addClass('active');
+			var elem = $('#li-' + selected);
+			//console.log('calc', elem.offset().top + elem.height());
+			if( elem.offset().top + elem.height() >=  (window.outerHeight + $(window).scrollTop()) ){
+				window.scrollBy(0, elem.height() + elem.height()/2 + 3);
+			}
+		}
+	}
 }
 
 $(function(){
@@ -67,6 +91,7 @@ $(function(){
 		// TODO => Filter non-letter keypresses (ctrl, alt...)
 		setTimeout(function() {
 			var q = $('#search').val();
+			console.log('search keypress', 'q', q, 'prevQ', prevQ);
 			if( (q !== '' && q !== ' ') ){
 				//console.log(q);
 				prevQ = q;
@@ -80,13 +105,17 @@ $(function(){
 
 	$('#search').keydown(function( evt ){
 		// Little delay for value setup
-		var q = $('#search').val();
-		if( prevQ !== q ){
-			setTimeout(function(){
-				prevQ = q;
-				ipc.send( 'query',q );
-			}, 10);
-		}
+		setTimeout(function() {
+			var q = $('#search').val();
+			console.log('search keydown', 'q', q, 'prevQ', prevQ);
+			if( prevQ !== q ){
+				console.log('differ');
+				setTimeout(function(){
+					prevQ = q;
+					ipc.send( 'query',q );
+				}, 10);
+			}
+		}, 10);
 	})
 
 	if( $('#list').attr('hidden') ){
@@ -107,7 +136,8 @@ $(function(){
 			}
 			list.forEach(function( item, idx ){
 				var el = $(_constructItem( !!(idx === 0), ('li-' + idx), item ));
-				el.data('exec', item.appCmd);
+				// Wrap object
+				el.data('exec', item);
 				$('#list').append( el );
 				ipc.send('requestSize', $('[id^=li-').length, $(('#li-' + idx)).height() );
 			})	
@@ -116,44 +146,34 @@ $(function(){
 			$('#list').attr('hidden', true);
 		}
 	})
+	var appent =0;
+	ipc.on('appendToView', function( event, list ) {
+		setTimeout(function() {
+			if( list.length ){
+				if( $('#list').attr('hidden') ){
+					$('#list').attr('hidden', false);
+				}
+				list.forEach(function( item, idx ){
+					var el = $(_constructItem( false, ('li-' + ($('[id^=li-').length + idx)), item ));
+					// Wrap object
+					el.data('exec', item);
+					$('#list').append( el );
+					ipc.send('requestSize', $('[id^=li-').length, $(('#li-' + idx)).height() );
+				});
+			}
+		}, 10);
+	})
 	ipc.on('halt', function(){
 		$('#search').val('');
 		$('[id^="li-"').remove();
 		ipc.send('requestSize', 0, 0 );
 		$('#list').attr('hidden', true);
 	})
-	/*ipc.on('inactive', function(){
-		setTimeout(function() {
-			$('#search').val('');
-		}, 500);		
-	})*/
 }).keydown(function( event ){
 	if( event.which === 38 || event.which === 40){
 		event.preventDefault();
 		// Up/Down
-		var no = $('.list-group .list-group-item').length;
-		//console.log('no', no, 'selected', selected, 'which', event.which);
-		if( event.which === 38 ){
-			if( selected-1 >= 0 ){
-				$('#li-' + selected).removeClass('active');
-				$('#li-' + --selected).addClass('active');
-				var elem = $('#li-' + selected);
-				//console.log('calc', elem.offset().top - elem.height());
-				if( elem.offset().top - elem.height() <=  (window.outerHeight + $(window).scrollTop()) ){
-					window.scrollBy(0, -(elem.height() + elem.height()/2) + 4);
-				}
-			}
-		}else{
-			if( selected+1 < no ){// 0 based idx
-				$('#li-' + selected).removeClass('active');
-				$('#li-' + ++selected).addClass('active');
-				var elem = $('#li-' + selected);
-				//console.log('calc', elem.offset().top + elem.height());
-				if( elem.offset().top + elem.height() >=  (window.outerHeight + $(window).scrollTop()) ){
-					window.scrollBy(0, elem.height() + elem.height()/2 + 3);
-				}
-			}
-		}
+		_scroll( event.which === 38?'UP':'DOWN' );
 	}else if( event.which === 13 ){
 		event.preventDefault();
 		var data = $('#li-' + selected).data();
