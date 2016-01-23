@@ -28,10 +28,6 @@ echo "Version=1.0" >> Mutant.desktop
 echo "Name=The Mutant" >> Mutant.desktop
 echo "Comment=Efficiency program" >> Mutant.desktop
 echo "Exec=electron $(pwd)" >> Mutant.desktop
-echo "Icon=telegram-desktop" >> Mutant.desktop
 echo "Terminal=false" >> Mutant.desktop
 echo "Type=Application" >> Mutant.desktop
 echo "Categories=Utility;" >> Mutant.desktop
-
-# Launch app
-electron .
