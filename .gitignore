@@ -44,3 +44,6 @@ tests
 
 # Misc
 *.desktop
+
+# Dist
+mkDist.sh
