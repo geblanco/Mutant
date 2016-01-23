@@ -1,6 +1,17 @@
 {
   "name": "Mutant",
   "version": "0.1.0",
+  "license": "MIT",
+  "description": "Productivity launcher",
+  "author": "Guillermo Blanco",
+  "repository" : {
+    "type" : "git",
+    "url"  : "https://github.com/m0n0l0c0/Mutant.git"
+  },
+  "bugs": {
+    "url" : "https://github.com/m0n0l0c0/Mutant/issues",
+    "email" : "guillermoechegoyenblanco@gmail.com"
+  },
   "main": "main.js",
   "dependencies": {
     "async": "*",
@@ -8,7 +19,9 @@
     "librsvg": "*",
     "lodash": "*",
     "mkdirp": "*",
-    "upath": "*"
+    "sqlite3": "*",
+    "upath": "*",
+    "vertigo": "https://github.com/m0n0l0c0/vertigo"
   },
   "devDependencies": {
     "electron-packager": "^5.1.0"

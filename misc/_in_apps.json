@@ -1,0 +1,32 @@
+{
+	"preference": {
+		"appName": "Preferences",
+		"subText": "Launch Preferences Tab",
+		"appCmd": "preference",
+		"iconPath": "../icons/setting.png"
+	},
+	"quit": {
+		"appName": "Quit Mutant",
+		"subText": "Quit the App",
+		"appCmd": "quit",
+		"iconPath": "../icons/quit"
+	},
+	"netGo": {
+		"appName": "Open Url",
+		"subText": "Open given Url",
+		"appCmd": "netGo",
+		"iconPath": "../icons/openurl.png"
+	},
+	"netSearch": {
+		"appName": "Google Search",
+		"subText": "Search whatever on the net",
+		"appCmd": "netSearch",
+		"iconPath": "../icons/google.png"
+	},
+	"browseHistory": {
+		"appName": "",
+		"subText": "",
+		"appCmd": "browseHistory",
+		"iconPath": "../icons/link.png"
+	}
+}

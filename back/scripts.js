@@ -3,13 +3,12 @@
 var BrowserWindow = require('electron').BrowserWindow;
 var ipc   = require('electron').ipcMain;
 var spawn = require('child_process').spawn;
-var async = require('async');
-var upath = require('upath');
-
-
-
+var bindings = require(global.upath.join(__dirname, '/../', 'bridge/bindings'));
+// Generic URI OS-provided launcher
 var baseCmd = 'xdg-open'
-,	apps 	= null;
+// Cached apps from user
+,	apps 	= null
+, 	_in_apps= require(global.upath.join(__dirname, '/../', 'misc/_in_apps.json'));
 
 var _spawner = function( cmd, opts, cwd ){
 	if( !cmd ){
@@ -47,9 +46,9 @@ var _launchPreferences = function(){
         title: "The Mutant - Preferences"
     });
 
-    settingsWindow.loadURL('file://' + upath.join( __dirname, '/../front/html/settings.html' ) );
+    settingsWindow.loadURL('file://' + global.upath.join( __dirname, '/../front/html/settings.html' ) );
     
-    var shortcuts = require( upath.join( __dirname, '/../misc', 'shortcuts.json') );
+    var shortcuts = require( global.upath.join( __dirname, '/../misc', 'shortcuts.json') );
 	
 	function _send(){
 		settingsWindow.send('resultsForView', [shortcuts]);
@@ -92,6 +91,17 @@ var _netSearch = function( exec, query ){
 
 }
 
+// Wrapper for deep copy, returns a new allocated object
+// avoiding overwrittings, call exceptionally
+var _getInternalApp = function( app ){
+	var ret = {};
+	if( _in_apps.hasOwnProperty( app ) ){
+		for(var i in _in_apps[ app ]){
+			ret[i] = _in_apps[ app ][ i ];
+		}
+	}
+	return ret;
+}
 // In the future allow shortcuts
 var REGEX = [
 	{ REG: /PREFERENCE/i, APP: 'preference' , REG2: 'preference' },
@@ -99,7 +109,7 @@ var REGEX = [
 	{ REG: /(?:(?:http|ftp|https)\:\/\/|(?:www\.))([^\.]*)(?:\.com|\.es)?|(?:(?:http|ftp|https)\:\/\/|(?:www\.))?([^\.]*)(?:\.com|\.es)/i, 
 		APP: 'netGo', REG2: 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
 		PART_1: /(?:(?:http|ftp|https)\:\/\/|(?:www\.))([^\.]*)/i,
-		PART_2: /([^\.]*)(?:\.com|\.es)/i
+		PART_2: /([^\.]*)(?:\.)/i
 	}
 ]
 /// /(?:(?:http|ftp|https)\:\/\/|(?:www\.))(.*)/i
@@ -107,34 +117,20 @@ var REGEX = [
 var _internalApps = {
 	
 	'preference': {
-		'wrapper': {
-			"appName": 'Preferences',
-			"subText": 'Launch Preferences Tab',
-			"appCmd": 'preference' // ../icons/preference
-		}, fn: _launchPreferences 
+		'wrapper': _in_apps['preference']
+		, fn: _launchPreferences 
 	},
 	'quit': {
-		'wrapper': {
-			"appName": 'Quit Mutant',
-			"subText": 'Quit the App',
-			"appCmd": 'quit' // ../icons/quit
-		}, fn: _quitApp
+		'wrapper': _in_apps['quit']
+		, fn: _quitApp
 	},
 	'netGo': {
-		'wrapper': {
-			"appName": 'Open Url',
-			"subText": 'Open given Url',
-			"appCmd": 'netGo',
-			"iconPath": '../icons/openurl.png'
-		}, fn: _netGo
+		'wrapper': _in_apps['netGo']
+		, fn: _netGo
 	},
 	'netSearch': {
-		'wrapper': {
-			"appName": "Google Search",
-			"subText": 'Search whatever on the net',
-			"appCmd": 'netSearch',
-			"iconPath": '../icons/google.png'
-		}, fn: _netSearch
+		'wrapper': _in_apps['netSearch']
+		, fn: _netSearch
 	}
 }
 
@@ -169,7 +165,7 @@ var _search = function( query, callback ){
 		// Preferences, Quit, Url
 		REGEX.forEach(function( Q, idx ){
 			var reg = _getRegexForQuery( query );
-			console.log('query', query, 'regex', Q.REG, 'test', Q.REG.test(query) );
+			//console.log('query', query, 'regex', Q.REG, 'test', Q.REG.test(query) );
 			if( _strSearch( Q.REG2, query ) !== -1 || Q.REG.test( query ) ){
 				//console.log('Match with', Q.REG2);
 				matches.push( _internalApps[ Q.APP ].wrapper );
@@ -193,6 +189,7 @@ var _search = function( query, callback ){
 	callback( null, matches );
 }
 
+// TODO => Avoid doing this every time
 var _cacheFiles = function( cmd, callback ){
 	console.log('Spawning cacheFiles', cmd);
 	var args = [];
@@ -208,39 +205,39 @@ var _cacheFiles = function( cmd, callback ){
 	
 		var apps = require(__dirname + '/../cached/apps.json');
 		var os = require('os');
-		//var svg2png = require('svg2png');
 		
 		var Rsvg = require('librsvg').Rsvg;
 		var fs = require('fs');
-		var dstDir = upath.join( __dirname, '/../cached/icons');
+		var dstDir = global.upath.join( __dirname, '/../cached/icons');
 		 
 		var changes = [];
 		var mkdirp = require('mkdirp');
 
 		try{ fs.lstatSync( dstDir ); }catch(e){ mkdirp.sync( dstDir ); }
 		
-		async.forEachOf(apps, function( app, idx, callback ){
+		global.async.forEachOf(apps, function( app, idx, callback ){
 			
 			//console.log('forEach');
 			if( app.iconPath !== '__unknown__' ){
 				// Check svg
-				var trimmed = upath.removeExt( app.iconPath, 'svg' );
+				var trimmed = global.upath.removeExt( app.iconPath, 'svg' );
 				if( trimmed === app.iconPath ){
 					// Non svg, skip
 					callback( null );
 				}else{
-					var svg = new Rsvg();
+					// svg, check if yet converted, else, convert it
 					var mod = trimmed.split('/');
 
 					mod = mod[mod.length-1];
-					mod = upath.addExt(mod, 'png');
-					mod = upath.join( dstDir, mod );
+					mod = global.upath.addExt(mod, 'png');
+					mod = global.upath.join( dstDir, mod );
 					fs.lstat( mod, function( err ){
 						// Icon did exist
 						if( !err ){
 							changes.push({ 'idx': idx, 'mod': mod });
 						    callback( null );
 						}else{
+							var svg = new Rsvg();
 							// When finishing reading SVG, render and save as PNG image. 
 							svg.on('finish', function() {
 								fs.writeFile(mod, svg.render({
@@ -276,13 +273,14 @@ var _cacheFiles = function( cmd, callback ){
 }
 
 var _processAndLaunch = function( exec, query ){
-	
+	// Unwrap object
+	var cmd = exec.appCmd;
 	var a = Object.keys( _internalApps );
-	if( a.indexOf( exec ) === -1 ){
+	if( a.indexOf( cmd ) === -1 ){
 		console.log('for spawner', exec, query);
-		_spawner( exec );
+		_spawner( cmd );
 	}else{
-		_internalApps[ a[a.indexOf( exec )] ].fn( exec, query );
+		_internalApps[ a[a.indexOf( cmd )] ].fn( exec, query );
 	}
 }
 

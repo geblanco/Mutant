@@ -32,10 +32,10 @@ Launch app
 
 ## Contributing
 Any contribution is welcome, don't hesitate to make a pull request.
-My front-end skill-set is poor, any support there would much appreciated.
+My front-end skill-set is poor, any support there would be much appreciated.
 
 ## Motivation
-After using qdore's mutate for almost a year and customized it a lot I miss some functions so I decided to make my own version of it.
+After using qdore's mutate for almost a year and customizing it a lot I miss some functionality so I decided to make my own version of it.
 
 ## Roadmap
 * Install script (by now just set things up)
