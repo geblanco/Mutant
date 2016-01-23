@@ -2,6 +2,7 @@
 //Entry point, set custom object in global
 global.upath	= require('upath');
 global.async 	= require('async');
+global.db       = require('./db/db');
 // ***************** Electron *****************
 var electron      = require('electron');
 var app           = electron.app;               // Module to control application life.
@@ -84,6 +85,14 @@ global.async.parallel([
         console.log('[MAIN] Cache files');
         scripts = require(global.upath.join(__dirname, './back', 'scripts'));
         scripts.cacheFiles( setup.theme, function( err, result ){
+            if( err ) console.log(err);
+            callback( null );
+        });
+    },
+    // Init db
+    function( callback ){
+        console.log('[MAIN] Initialize DB');
+        global.db.init(function( err ){
             if( err ) console.log(err);
             callback( null );
         });
@@ -179,9 +188,11 @@ global.async.parallel([
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    bindings.clear();
-    globalShortcut.unregisterAll();
-    mainWindow = null;
-    console.log('=========================');
-    process.exit(0);
+    global.db.shutdown(function(){
+        bindings.clear();
+        globalShortcut.unregisterAll();
+        console.log('=========================');
+        mainWindow = null;
+        process.exit(0);
+    });
 });
