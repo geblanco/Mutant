@@ -8,7 +8,8 @@ var bindings = require(global.upath.join(__dirname, '/../', 'bridge/bindings'));
 var baseCmd = 'xdg-open'
 // Cached apps from user
 ,	apps 	= null
-, 	_in_apps= require(global.upath.join(__dirname, '/../', 'misc/_in_apps.json'));
+, 	_in_apps= require(global.upath.join(__dirname, '/../', 'misc/_in_apps.json'))
+, 	_quitCB = function(){};
 
 var _spawner = function( cmd, opts, cwd ){
 	if( !cmd ){
@@ -19,7 +20,7 @@ var _spawner = function( cmd, opts, cwd ){
 	}else if( !(opts instanceof Array) ){
 		opts = [opts];
 	}
-	console.log('Spawning', cmd, 'with options', opts);
+	console.log('[SCRIPT] Spawning', cmd, 'with options', opts);
 	var child = spawn(cmd, opts, {
 		detached: true,
 		stdio: [ 'ignore', 'ignore', 'ignore' ],
@@ -33,7 +34,7 @@ var _spawner = function( cmd, opts, cwd ){
 
 var _launchPreferences = function(){
 	// Launch Preferences window
-	console.log('_launchPreferences!!');
+	console.log('[SCRIPT] launchPreferences');
 	
 	var settingsWindow = new BrowserWindow({
         width: 600,
@@ -57,7 +58,7 @@ var _launchPreferences = function(){
     ipc.on('ready', _send);
 
 	settingsWindow.on('close', function( evt ){
-		console.log('Closing preferences');
+		console.log('[SCRIPT] Closing preferences');
 		ipc.removeListener('ready', _send );
 		settingsWindow = null;
 		// Save
@@ -66,14 +67,14 @@ var _launchPreferences = function(){
 
 var _quitApp = function(){
 	// Quit app
-	console.log('_quitApp!!');
+	_quitCB();
 }
 
 var _netGo = function( exec, query ){
 
 	var reg = REGEX.filter(function( item ){ return item.APP === 'netGo' });
 	reg = reg[0];
-	console.log('netGo!', arguments, 'cached reg', reg);
+	console.log('[SCRIPT] netGo', arguments, 'cached reg', reg);
 	if( reg.PART_1.test( query ) ){
 		// Lack endind
 		query += '.com'
@@ -304,7 +305,7 @@ var _processAndLaunch = function( exec, query ){
 	var cmd = exec.appCmd;
 	var a = Object.keys( _internalApps );
 	if( a.indexOf( cmd ) === -1 ){
-		console.log('for spawner', exec, query);
+		console.log('[SCRIPT] for spawner', exec, query);
 		_spawner( cmd );
 	}else{
 		_internalApps[ a[a.indexOf( cmd )] ].fn( exec, query );
@@ -316,5 +317,6 @@ module.exports = {
 	netGo: _netGo,
 	search: _search,
 	spawner: _spawner,
-	processAndLaunch: _processAndLaunch
+	processAndLaunch: _processAndLaunch,
+	setQuitCallback: function( cb ){ _quitCB = cb }
 }

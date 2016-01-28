@@ -97,7 +97,7 @@ global.async.parallel([
             callback( null );
         });
     },
-    // Init windows
+    // Init window
     function( callback ){
         // This method will be called when Electron has finished
         // initialization and is ready to create browser windows.
@@ -113,21 +113,42 @@ global.async.parallel([
                 resizable: false,
                 darkTheme: true,
                 frame: false,
-                show: true,
+                show: false,
                 title: "The Mutant"
             });
 
+            // Load the main window.
             console.log('[MAIN] Load index');
             mainWindow.loadURL('file://' + global.upath.join( __dirname, '/front/html/index.html' ) );
 
+            // Setup bindings for duplex communication.
+            // Pass a function to the bridge so that it can call it when it needs anything,
+            // by now just hide and quit
             console.log('[MAIN] Setup Bindings');
-            bindings.setup( mainWindow, screen.getDisplayNearestPoint( screen.getCursorScreenPoint() ) );
+            bindings.setup( mainWindow, screen.getDisplayNearestPoint( screen.getCursorScreenPoint() ), function( evt ){
+                switch( evt ){
+                    case 'hide':
+                        // Shortcut for inside window close 
+                        // (used by exec, upon exec call hide window)
+                        console.log('[MAIN] Hide evt');
+                        _handleShortcut('OFF');
+                        break;
+                    case 'quit':
+                        console.log('[MAIN] Quit evt');
+                        mainWindow.removeListener('closed', callback);
+                        process.removeListener('SIGINT', callback);
+                        callback();
+                        break;
+                    default: break;
+                }
+            });
             //mainWindow.openDevTools();
 
+            // Register evts and shortcuts
             mainWindow.on('blur', _handleShortcut);
 
             var launchShortcut = require( global.upath.join(__dirname, './misc', 'shortcuts.json') )['shortcut'];
-            // Register the shortcut
+            // Register shortcut
             console.log('[MAIN] Register shortcut 1/2');
             var reg = globalShortcut.register( launchShortcut, function(){
                 _handleShortcut('TOGGLE');
@@ -143,29 +164,6 @@ global.async.parallel([
                 console.log('[MAIN] Failed registering Esc')
             }
 
-            // As of now, scripts could not be initialized yet, so this may fail
-            // 
-            // Hotfix: On first start, if the window looses focus and no text has been input,
-            //  for some reason, window do not appear again, even with the shortcut (which gets captured, 
-            //  but does not trigger the handler WTF???)
-            //  BUT, if text has been input, the problem dissappears
-            //  FIX: Send default NetSearch app on startup.
-            //  TODO => Follow execution (related with resize??)
-            //      Which part of the gets to execute on first input so that the problem does not happen?
-            setTimeout(function() {
-                console.log('[MAIN] Send google search');
-                if( scripts ){
-                    scripts.search( 'Welcome Back!!', function( err, results ){
-                        //console.log('Bindings', results);
-                        if( !err && results ){
-                            mainWindow.send( 'resultsForView', results );
-                        }
-                    })
-                }else{
-                    console.log('[MAIN] Scripts unavailable');
-                }
-            }, 500);
-
             console.log('[MAIN] Register close 1/2');
             var closeTries = 0;
             mainWindow.on('close', function( evt ){
@@ -176,23 +174,58 @@ global.async.parallel([
             console.log('[MAIN] Register close 2/2');
             // Emitted when the window is closed.
             mainWindow.on('closed', callback);
-
-
+            // End
+            process.on('SIGINT', function(){
+                mainWindow.removeListener('closed', callback);
+                callback();
+            });
+            
+            // Wait until window is loaded
+            ipc.on('ready', function( evt ){
+                console.log('[MAIN] Window ready');
+                _handleShortcut('TOGGLE');
+                // As of now, scripts could not be initialized yet, so this may fail
+                // 
+                // Hotfix: On first start, if the window looses focus and no text has been input,
+                //  for some reason, window do not appear again, even with the shortcut (which gets captured, 
+                //  but does not trigger the handler WTF???)
+                //  BUT, if text has been input, the problem dissappears
+                //  FIX: Send default NetSearch app on startup.
+                //  TODO => Follow execution (related with resize??)
+                //      Which part of the gets to execute on first input so that the problem does not happen?
+                if( scripts ){
+                    scripts.search( 'Welcome Back!!', function( err, results ){
+                        //console.log('Bindings', results);
+                        if( !err && results ){
+                            mainWindow.send( 'resultsForView', results );
+                        }
+                    })
+                }else{
+                    console.log('[MAIN] Scripts unavailable');
+                }
+            })
         });
-
-    }, function( callback ){
-        process.on('SIGINT', callback);
     }
 ], function(){
     console.log('=========SHUT DOWN=======');
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    global.db.shutdown(function(){
-        bindings.clear();
-        globalShortcut.unregisterAll();
+    global.async.waterfall([
+        function( callback ){
+            // DB might have been closed yet
+            try{
+                global.db.shutdown(function(){ callback(); });
+            }catch(e){ callback(); }
+        }, 
+        function( callback ){
+            bindings.clear();
+            globalShortcut.unregisterAll();
+            callback();
+        }
+    ], function(){
         console.log('=========================');
         mainWindow = null;
         process.exit(0);
-    });
+    })
 });

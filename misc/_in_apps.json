@@ -9,7 +9,7 @@
 		"appName": "Quit Mutant",
 		"subText": "Quit the App",
 		"appCmd": "quit",
-		"iconPath": "../icons/quit"
+		"iconPath": "../icons/quit.png"
 	},
 	"netGo": {
 		"appName": "Open Url",
