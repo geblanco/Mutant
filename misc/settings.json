@@ -1,0 +1,8 @@
+{
+	"version": "0.1.0",
+	"theme": "Menda-Circle",
+	"db_port": 42511,
+	"shortcuts": {
+		"launch": "Ctrl+Space"
+	}
+}

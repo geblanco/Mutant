@@ -22,7 +22,7 @@ var dbs = [{
 	query	: 'SELECT url, title FROM moz_places WHERE title like ? LIMIT 20',
 }];
 
-var _init = function( callback ){
+var _init = function( port, callback ){
 	global.async.waterfall([
 		function( callback ){
 			var search = spawn('find', [app.getPath('home'), '-name', 'places.sqlite']);
@@ -51,8 +51,9 @@ var _init = function( callback ){
 				console.log('[DB MAIN] db process exited with code ' + code);
 		    });
 		    var ports = [];
-		    var	db_port = require(global.upath.join(__dirname, 'db.json'))['db_port'];
-		    dbs.forEach(function(db, idx){ ports.push( db_port + idx ) });
+		    //var	db_port = require(global.upath.join(__dirname, 'db.json'))['db_port'];
+		    dbs.forEach(function(db, idx){ ports.push( port + idx ) });
+		    console.log('[DB MAIN] Initializing', dbs);
 			dbClient = vertigo.createClient( ports );
 			callback( null );
 		}

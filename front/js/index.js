@@ -169,7 +169,7 @@ $(function(){
 		ipc.send('requestSize', 0, 0 );
 		$('#list').attr('hidden', true);
 	})
-	ipc.send('ready');
+	ipc.send('mainReady');
 }).keydown(function( event ){
 	if( event.which === 38 || event.which === 40){
 		event.preventDefault();

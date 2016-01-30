@@ -49,13 +49,22 @@ var _launchPreferences = function(){
 
     settingsWindow.loadURL('file://' + global.upath.join( __dirname, '/../front/html/settings.html' ) );
     
-    var shortcuts = require( global.upath.join( __dirname, '/../misc', 'shortcuts.json') );
+    // Prepare settings
+    function _prepare( shortcuts ){
+    	var ret = [], aux = {};
+    	Object.keys(shortcuts).forEach(function( key ){
+    		aux[ 'command' ] = key;
+    		aux[ 'shortcut' ] = shortcuts[ key ];
+    		ret.push( aux );
+    	})
+    	return ret;
+    }
 	
 	function _send(){
-		settingsWindow.send('resultsForView', [shortcuts]);
+		settingsWindow.send('resultsForView', _prepare( global.settings.get('shortcuts') ));
 	}
 
-    ipc.on('ready', _send);
+    ipc.on('prefsReady', _send);
 
 	settingsWindow.on('close', function( evt ){
 		console.log('[SCRIPT] Closing preferences');
@@ -217,7 +226,6 @@ var _search = function( query, callback ){
 	callback( null, matches );
 }
 
-// TODO => Avoid doing this every time
 var _cacheFiles = function( cmd, callback ){
 	console.log('Spawning cacheFiles', cmd);
 	var args = [];
