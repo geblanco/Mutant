@@ -39,9 +39,9 @@ After using qdore's mutate for almost a year and customizing it a lot I miss som
 
 ## Roadmap
 * Install script (by now just set things up)
-* ~~ Settings window ~~ (Shortcut override)
+* ~~Settings window~~ (Shortcut override)
 * Use and launch custom scripts (search on given scripts folder)
-* ~~ Search on more browsers history ~~ (By now spport for Chrome and Firefox)
+* ~~Search on more browsers history~~ (By now spport for Chrome and Firefox)
 * Dictionary
 * Calculator
 * Translator
