@@ -38,15 +38,16 @@ var _quit = function( callback ){
 	callback();
 }
 
-function Database( name, dir, query, port ){
-	this.name 	= name 	|| '';
-	this.dir 	= dir 	|| '';
-	this.query 	= query || '';
+function Database( obj ){
+	this.name 	= obj.name 	|| '';
+	this.dir 	= obj.dir 	|| '';
+	this.query 	= obj.query || '';
+	this.port 	= obj.port;
 	this.server = null;
-	this.port 	= port;
-	if( dir && query ){
+	if( obj.dir && obj.query && obj.port ){
 		try{
-			this.server = vertigo.createServer( port, '127.0.0.1' );
+			console.log('[DB PROC] createServer', this.port);
+			this.server = vertigo.createServer( this.port, '127.0.0.1' );
 		}catch(e){ console.log('[DB PROC] Could not create server'); this.server = null; }
 	}
 }
@@ -86,8 +87,7 @@ var args = Array.prototype.slice.call( process.argv, 2 );
 async.forEachOf( args, function( db, idx, callback ){
 	// Unwrap
 	var a = JSON.parse(db);
-	var db_port = require(upath.join(__dirname, 'db.json'))['db_port'];
-	var aux = new Database( a.name, a.dir, a.query, db_port + idx );
+	var aux = new Database( a );
 	aux.init(function( err ){
 		if( !err ) dbs.push( aux );
 		callback( err );
@@ -95,6 +95,6 @@ async.forEachOf( args, function( db, idx, callback ){
 }, function( err ){
 	if( !dbs.length ){
 		console.log('[DB PROC] NO DATABASE PROVIDED', err);
-		process.exit(1)
+		process.exit(1000)
 	}
 });

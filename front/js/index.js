@@ -169,6 +169,7 @@ $(function(){
 		ipc.send('requestSize', 0, 0 );
 		$('#list').attr('hidden', true);
 	})
+	ipc.send('mainReady');
 }).keydown(function( event ){
 	if( event.which === 38 || event.which === 40){
 		event.preventDefault();
@@ -177,7 +178,7 @@ $(function(){
 	}else if( event.which === 13 ){
 		event.preventDefault();
 		var data = $('#li-' + selected).data();
-		ipc.send('execute', data.exec, $('#search').val()); 
+		ipc.send('execute', data.exec, $('#search').val());
 		console.log($('#li-' + selected).data());
 	}
 })

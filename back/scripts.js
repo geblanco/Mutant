@@ -1,14 +1,17 @@
 'use strict';
 
 var BrowserWindow = require('electron').BrowserWindow;
-var ipc   = require('electron').ipcMain;
-var spawn = require('child_process').spawn;
-var bindings = require(global.upath.join(__dirname, '/../', 'bridge/bindings'));
+var ipc   		= require('electron').ipcMain;
+var spawn 		= require('child_process').spawn;
+var bindings 	= require(global.upath.join(__dirname, '/../', 'bridge/bindings'));
 // Generic URI OS-provided launcher
-var baseCmd = 'xdg-open'
+var baseCmd 	= 'xdg-open'
 // Cached apps from user
-,	apps 	= null
-, 	_in_apps= require(global.upath.join(__dirname, '/../', 'misc/_in_apps.json'));
+,	apps 		= null
+, 	_in_apps	= require(global.upath.join(__dirname, '/../', 'misc/_in_apps.json'))
+, 	_quitCB 	= function(){}
+, 	_newSCutCB 	= function(){}
+;
 
 var _spawner = function( cmd, opts, cwd ){
 	if( !cmd ){
@@ -19,7 +22,7 @@ var _spawner = function( cmd, opts, cwd ){
 	}else if( !(opts instanceof Array) ){
 		opts = [opts];
 	}
-	console.log('Spawning', cmd, 'with options', opts);
+	console.log('[SCRIPT] Spawning', cmd, 'with options', opts);
 	var child = spawn(cmd, opts, {
 		detached: true,
 		stdio: [ 'ignore', 'ignore', 'ignore' ],
@@ -30,10 +33,9 @@ var _spawner = function( cmd, opts, cwd ){
 }
 
 // INTERNALS
-
 var _launchPreferences = function(){
 	// Launch Preferences window
-	console.log('_launchPreferences!!');
+	console.log('[SCRIPT] launchPreferences');
 	
 	var settingsWindow = new BrowserWindow({
         width: 600,
@@ -48,38 +50,45 @@ var _launchPreferences = function(){
 
     settingsWindow.loadURL('file://' + global.upath.join( __dirname, '/../front/html/settings.html' ) );
     
-    var shortcuts = require( global.upath.join( __dirname, '/../misc', 'shortcuts.json') );
+    // Prepare settings
+    function _prepare( shortcuts ){
+    	var ret = [], aux = {};
+    	Object.keys(shortcuts).forEach(function( key ){
+    		aux[ 'command' ] = key;
+    		aux[ 'shortcut' ] = shortcuts[ key ];
+    		ret.push( aux );
+    	})
+    	return ret;
+    }
 	
 	function _send(){
-		settingsWindow.send('resultsForView', [shortcuts]);
+		settingsWindow.send('resultsForView', _prepare( global.settings.get('shortcuts') ));
 	}
 
-    ipc.on('ready', _send);
+	function _sendToBack( evt, shortcut ){
+    	console.log('[SCRIPT] shortcutChange', shortcut);
+    	_newSCutCB( shortcut );
+    }
+
+    ipc.on('prefsReady', _send);
+    ipc.on('shortcutChange', _sendToBack);
 
 	settingsWindow.on('close', function( evt ){
-		console.log('Closing preferences');
-		ipc.removeListener('ready', _send );
-		settingsWindow = null;
-		// Save
+		// nullify
+		console.log('[SCRIPT] Closing preferences');
+		ipc.removeListener( 'prefsReady', _send );
+		ipc.removeListener( 'shortcutChange', _sendToBack );
+		settingsWindow = _send = _prepare = null;
 	})
 }
 
 var _quitApp = function(){
 	// Quit app
-	console.log('_quitApp!!');
+	_quitCB();
 }
 
 var _netGo = function( exec, query ){
 
-	var reg = REGEX.filter(function( item ){ return item.APP === 'netGo' });
-	reg = reg[0];
-	console.log('netGo!', arguments, 'cached reg', reg);
-	if( reg.PART_1.test( query ) ){
-		// Lack endind
-		query += '.com'
-	}else if( reg.PART_2.test( query ) ){
-		query = 'www.' + query;
-	}
 	_spawner( 'xdg-open', [query] );
 
 }
@@ -112,14 +121,9 @@ var _getInternalApp = function( app ){
 var REGEX = [
 	{ REG: /PREFERENCE/i, APP: 'preference' , REG2: 'preference' },
 	{ REG: /QUIT/i,		  APP: 'quit' 		, REG2: 'quit' },
-	{ REG: /(?:(?:http|ftp|https)\:\/\/|(?:www\.))([^\.]*)(?:\.com|\.es)?|(?:(?:http|ftp|https)\:\/\/|(?:www\.))?([^\.]*)(?:\.com|\.es)/i, 
-		APP: 'netGo', REG2: 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
-		PART_1: /(?:(?:http|ftp|https)\:\/\/|(?:www\.))([^\.]*)/i,
-		PART_2: /([^\.]*)(?:\.)/i
-	}
+	{ REG: /(?:(?:http|ftp|https)\:\/\/(?:www\.))([^\.]*)(?:\.com|\.es)?|(?:(?:http|ftp|https)\:\/\/(?:www\.))?([^\.]*)(?:\.)/i, APP: 'netGo', REG2: null }
 ]
-/// /(?:(?:http|ftp|https)\:\/\/|(?:www\.))(.*)/i
-/// (?:(?:http|ftp|https)\:\/\/|(?:www\.))?([^\.]*)(?:\.com|\.es)?
+
 var _internalApps = {
 	
 	'preference': {
@@ -145,6 +149,9 @@ var _internalApps = {
 }
 
 var _strSearch = function( str, query ){
+	if( typeof str !== 'string' || typeof query !== 'string' ){
+		return -1;
+	}
 	str = str.toLowerCase();
 	query = query.toLowerCase();
 	return str.indexOf(query);
@@ -175,16 +182,13 @@ var _search = function( query, callback ){
 		// Preferences, Quit, Url
 		REGEX.forEach(function( Q, idx ){
 			var reg = _getRegexForQuery( query );
-			//console.log('query', query, 'regex', Q.REG, 'test', Q.REG.test(query) );
 			if( _strSearch( Q.REG2, query ) !== -1 || Q.REG.test( query ) ){
-				//console.log('Match with', Q.REG2);
 				matches.push( _internalApps[ Q.APP ].wrapper );
 			}
 		})
 		// Broswser History files
 		global.db.query(query, function( err, results ){
 			if( !err ){
-				//console.log('from scripts db query', results);
 				// Deep copy
 				var aux = _getInternalApp('browseHistory');
 				results.forEach(function( result ){
@@ -202,13 +206,11 @@ var _search = function( query, callback ){
 		apps.forEach(function( app, idx ){
 			var reg = _getRegexForQuery( query );
 			if( _strSearch( app.appName, query ) !== -1 ){
-				//console.log('Match with', app.appName);
 				matches.push( app );
 			}
 		})
 
 	}
-	//console.log(matches);
 	if( matches.length === 0 ){
 		matches.push( _internalApps['netSearch'].wrapper );
 	}
@@ -216,7 +218,6 @@ var _search = function( query, callback ){
 	callback( null, matches );
 }
 
-// TODO => Avoid doing this every time
 var _cacheFiles = function( cmd, callback ){
 	console.log('Spawning cacheFiles', cmd);
 	var args = [];
@@ -304,7 +305,7 @@ var _processAndLaunch = function( exec, query ){
 	var cmd = exec.appCmd;
 	var a = Object.keys( _internalApps );
 	if( a.indexOf( cmd ) === -1 ){
-		console.log('for spawner', exec, query);
+		console.log('[SCRIPT] for spawner', exec, query);
 		_spawner( cmd );
 	}else{
 		_internalApps[ a[a.indexOf( cmd )] ].fn( exec, query );
@@ -313,8 +314,10 @@ var _processAndLaunch = function( exec, query ){
 
 module.exports = {
 	cacheFiles: _cacheFiles,
-	netGo: _netGo,
+	/*netGo: _netGo,*/
 	search: _search,
 	spawner: _spawner,
-	processAndLaunch: _processAndLaunch
+	processAndLaunch: _processAndLaunch,
+	setNewSCutCallback: function( cb ){ _newSCutCB = cb },
+	setQuitCallback: function( cb ){ _quitCB = cb }
 }

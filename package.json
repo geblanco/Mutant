@@ -4,16 +4,17 @@
   "license": "MIT",
   "description": "Productivity launcher",
   "author": "Guillermo Blanco",
-  "repository" : {
-    "type" : "git",
-    "url"  : "https://github.com/m0n0l0c0/Mutant.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/m0n0l0c0/Mutant.git"
   },
   "bugs": {
-    "url" : "https://github.com/m0n0l0c0/Mutant/issues",
-    "email" : "guillermoechegoyenblanco@gmail.com"
+    "url": "https://github.com/m0n0l0c0/Mutant/issues",
+    "email": "guillermoechegoyenblanco@gmail.com"
   },
   "main": "main.js",
   "dependencies": {
+    "electron-settings": "^0.1.1",
     "async": "*",
     "jquery": "2.1.4",
     "librsvg": "*",

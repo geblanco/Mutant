@@ -8,11 +8,13 @@ var maxElements = null;
 var baseHeight = null;
 var ipc = require('electron').ipcMain;
 var scripts = require( global.upath.join(__dirname, '/../back/scripts') );
+var parentComm = function(){};
 
 var _requestSize = function( event, noElems, size ){
 
 	var dim = window.getContentSize();
-
+	size = size || baseHeight;
+	
 	function _calculateMaxElements( size ){
 		var i = 0;
 		for(; i*size < maxHeight; i++);
@@ -37,12 +39,10 @@ var _requestSize = function( event, noElems, size ){
 		}
 	}else{
 		window.setContentSize(dim[0], baseHeight);
-		//window.center();
 	}
 }
 
 ipc.on('query', function( event, query ){
-	
 	// Search
 	scripts.search( query, function( err, results ){
 		//console.log('Bindings', results);
@@ -54,18 +54,22 @@ ipc.on('query', function( event, query ){
 });
 
 ipc.on('execute', function( event, exec, query ){
-	console.log('Called exec', exec);
+	console.log('[BRIDGE] Called exec', exec);
+	parentComm('hide');
 	scripts.processAndLaunch( exec, query );
 });
 
 
 ipc.on('requestSize', _requestSize);
 
-module.exports.setup = function( w, displ ){
+module.exports.setup = function( w, displ, fn ){
 	window = w;
 	display = displ;
 	maxHeight = display.bounds.height/2 - 30;
 	baseHeight = window.getContentSize()[1];
+	parentComm = fn || parentComm;
+	scripts.setQuitCallback( function(){ parentComm( 'quit') } );
+	scripts.setNewSCutCallback( function( newShortcut ){ parentComm( 'newShortcut', newShortcut ) } );
 }
 module.exports.setDisplay = function( displ ){
 	display = displ;

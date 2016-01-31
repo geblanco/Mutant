@@ -15,15 +15,16 @@ var sqlite 	= require('sqlite3').verbose();
 var dbs = [{
 	name	: 'chrome',
 	dir		: global.upath.join( app.getPath('appData'), 'google-chrome/Default/History'),
-	query	: ''
+	query	: 'SELECT url, title FROM urls WHERE title LIKE ? LIMIT 20'
 },{
 	name	: 'firefox',
 	dir		: '',
-	query	: 'SELECT url, title FROM moz_places WHERE title like ? LIMIT 20',
+	query	: 'SELECT url, title FROM moz_places WHERE title LIKE ? LIMIT 20',
 }];
 
-var _init = function( callback ){
+var _init = function( port, callback ){
 	global.async.waterfall([
+		// Search firefox db
 		function( callback ){
 			var search = spawn('find', [app.getPath('home'), '-name', 'places.sqlite']);
 			search.stdout.on('data', function( data ){
@@ -40,8 +41,40 @@ var _init = function( callback ){
 				}
 			})
 		},
+		// Negotiate port
 		function( dbs, callback ){
-			// Start database process
+			var tries = 10;
+			// TODO => Check EADDRINUSE
+			/*while((function(){
+				console.log('[DB MAIN] Negotiating ports...', port);
+				try{
+					if( tries-- ){
+						var s = vertigo.createServer( port, '127.0.0.1' );
+						console.log('[DB MAIN] createServer', s);
+						//var c = vertigo.createClient( port );
+						//c = null;
+						//s.close(function(){ console.log('server closed', arguments); });
+					}else{
+						port = null;
+					}
+					return false;
+				}catch(e){
+					console.log('failed');
+					port++;
+					return true;
+				}
+			})());
+			console.log('[DB MAIN] Negotiated', port);*/
+			if( port !== null ){
+				var ports = [];
+		    	dbs.forEach(function(db, idx){ db.port = port + idx; ports.push( port + idx ) });
+				callback( null, ports, dbs );
+			}else{
+				callback('[DB MAIN] UNABLE TO OPEN PORTS');
+			}
+		},
+		// Start and setup database process
+		function( ports, dbs, callback ){
 			dbServer = fork( global.upath.join(__dirname, 'dbProcess.js'), dbs.map(function(db){ return JSON.stringify(db) }), {
 		    	//stdio: [ 'ignore', 'ignore', 'ignore' ],
 				cwd: process.cwd()
@@ -50,9 +83,7 @@ var _init = function( callback ){
 		    dbServer.on('close', function (code) {
 				console.log('[DB MAIN] db process exited with code ' + code);
 		    });
-		    var ports = [];
-		    var	db_port = require(global.upath.join(__dirname, 'db.json'))['db_port'];
-		    dbs.forEach(function(db, idx){ ports.push( db_port + idx ) });
+		    console.log('[DB MAIN] Initializing', dbs);
 			dbClient = vertigo.createClient( ports );
 			callback( null );
 		}
