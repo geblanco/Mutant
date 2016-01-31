@@ -89,6 +89,13 @@ var _quitApp = function(){
 
 var _netGo = function( exec, query ){
 
+	var reg = REGEX.filter(function( item ){ return item.APP === 'netGo' });
+	reg = reg[0];
+	if( !reg.REG3.test( query ) ){
+		// Lack starting www....
+		query = 'www.' + query;
+	}
+
 	_spawner( 'xdg-open', [query] );
 
 }
@@ -121,7 +128,9 @@ var _getInternalApp = function( app ){
 var REGEX = [
 	{ REG: /PREFERENCE/i, APP: 'preference' , REG2: 'preference' },
 	{ REG: /QUIT/i,		  APP: 'quit' 		, REG2: 'quit' },
-	{ REG: /(?:(?:http|ftp|https)\:\/\/(?:www\.))([^\.]*)(?:\.com|\.es)?|(?:(?:http|ftp|https)\:\/\/(?:www\.))?([^\.]*)(?:\.)/i, APP: 'netGo', REG2: null }
+	{ REG: /(?:(?:http|ftp|https)\:\/\/(?:www\.))([^\.]*)(?:\.com|\.es)?|(?:(?:http|ftp|https)\:\/\/(?:www\.))?([^\.]*)(?:\.)/i, APP: 'netGo', REG2: null, 
+	  REG3: /(?:(?:http|ftp|https)\:\/\/(?:www\.))([^\.]*)/i
+	}
 ]
 
 var _internalApps = {

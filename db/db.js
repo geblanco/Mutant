@@ -105,7 +105,11 @@ var _query = function( query, callback ){
 		// Make it array like
 		dbClient.request('query', query, function( err, results ){
 			//console.log('on db query', results);
-			callback(null, JSON.parse(results));
+			if( results ){
+				callback(null, JSON.parse(results));
+			}else{
+				callback('bad result');
+			}
 		});
 	}else{
 		callback(null, []);
