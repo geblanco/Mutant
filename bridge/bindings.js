@@ -69,6 +69,7 @@ module.exports.setup = function( w, displ, fn ){
 	baseHeight = window.getContentSize()[1];
 	parentComm = fn || parentComm;
 	scripts.setQuitCallback( function(){ parentComm( 'quit') } );
+	scripts.setNewSCutCallback( function( newShortcut ){ parentComm( 'newShortcut', newShortcut ) } );
 }
 module.exports.setDisplay = function( displ ){
 	display = displ;

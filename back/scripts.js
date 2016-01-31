@@ -1,15 +1,17 @@
 'use strict';
 
 var BrowserWindow = require('electron').BrowserWindow;
-var ipc   = require('electron').ipcMain;
-var spawn = require('child_process').spawn;
-var bindings = require(global.upath.join(__dirname, '/../', 'bridge/bindings'));
+var ipc   		= require('electron').ipcMain;
+var spawn 		= require('child_process').spawn;
+var bindings 	= require(global.upath.join(__dirname, '/../', 'bridge/bindings'));
 // Generic URI OS-provided launcher
-var baseCmd = 'xdg-open'
+var baseCmd 	= 'xdg-open'
 // Cached apps from user
-,	apps 	= null
-, 	_in_apps= require(global.upath.join(__dirname, '/../', 'misc/_in_apps.json'))
-, 	_quitCB = function(){};
+,	apps 		= null
+, 	_in_apps	= require(global.upath.join(__dirname, '/../', 'misc/_in_apps.json'))
+, 	_quitCB 	= function(){}
+, 	_newSCutCB 	= function(){}
+;
 
 var _spawner = function( cmd, opts, cwd ){
 	if( !cmd ){
@@ -31,7 +33,6 @@ var _spawner = function( cmd, opts, cwd ){
 }
 
 // INTERNALS
-
 var _launchPreferences = function(){
 	// Launch Preferences window
 	console.log('[SCRIPT] launchPreferences');
@@ -64,13 +65,20 @@ var _launchPreferences = function(){
 		settingsWindow.send('resultsForView', _prepare( global.settings.get('shortcuts') ));
 	}
 
+	function _sendToBack( evt, shortcut ){
+    	console.log('[SCRIPT] shortcutChange', shortcut);
+    	_newSCutCB( shortcut );
+    }
+
     ipc.on('prefsReady', _send);
+    ipc.on('shortcutChange', _sendToBack);
 
 	settingsWindow.on('close', function( evt ){
+		// nullify
 		console.log('[SCRIPT] Closing preferences');
-		ipc.removeListener('ready', _send );
-		settingsWindow = null;
-		// Save
+		ipc.removeListener( 'prefsReady', _send );
+		ipc.removeListener( 'shortcutChange', _sendToBack );
+		settingsWindow = _send = _prepare = null;
 	})
 }
 
@@ -322,9 +330,10 @@ var _processAndLaunch = function( exec, query ){
 
 module.exports = {
 	cacheFiles: _cacheFiles,
-	netGo: _netGo,
+	/*netGo: _netGo,*/
 	search: _search,
 	spawner: _spawner,
 	processAndLaunch: _processAndLaunch,
+	setNewSCutCallback: function( cb ){ _newSCutCB = cb },
 	setQuitCallback: function( cb ){ _quitCB = cb }
 }

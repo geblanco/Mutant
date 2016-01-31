@@ -72,6 +72,21 @@ var _handleShortcut = function( evt ){
     }
 }
 
+var _handleNewShortcut = function( shortcut ){
+    var scut = Object.keys(shortcut)[0];
+    var currScuts = global.settings.get('shortcuts');
+    if( currScuts.hasOwnProperty( scut ) ){
+        console.log('[MAIN]', '_handleNewShortcut', scut, 'Shortcut', shortcut[scut]);
+        globalShortcut.unregister( global.settings.get('shortcuts')[scut] );
+        globalShortcut.register( shortcut[scut], function(){
+            _handleShortcut('TOGGLE');
+        });
+        global.settings.set(('shortcuts' + '.' + scut), shortcut[scut]);
+    }else{
+        console.log('[MAIN]', '_handleNewShortcut', 'ENOENT Shortcut');
+    }
+}
+
 var _ready = function(){
     ready = true
 }
@@ -102,8 +117,12 @@ var _main = function( callback ) {
     // Pass a function to the bridge so that it can call it when it needs anything,
     // by now just hide and quit
     console.log('[MAIN] Setup Bindings');
-    bindings.setup( mainWindow, screen.getDisplayNearestPoint( screen.getCursorScreenPoint() ), function( evt ){
+    bindings.setup( mainWindow, screen.getDisplayNearestPoint( screen.getCursorScreenPoint() ), function( evt, arg ){
         switch( evt ){
+            case 'newShortcut':
+                console.log('[MAIN] New Shortcut evt');
+                _handleNewShortcut( arg );
+                break;
             case 'hide':
                 // Shortcut for inside window close 
                 // (used by exec, upon exec call hide window)

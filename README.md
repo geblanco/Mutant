@@ -39,12 +39,11 @@ After using qdore's mutate for almost a year and customizing it a lot I miss som
 
 ## Roadmap
 * Install script (by now just set things up)
-* Settings window
+* ~~ Settings window ~~ (Shortcut override)
 * Use and launch custom scripts (search on given scripts folder)
 * Search on more browsers history
 * Dictionary
 * Calculator
-* User scripts
 * Translator
 * Maps??
 * Web preview (Apple's spotlight style)
