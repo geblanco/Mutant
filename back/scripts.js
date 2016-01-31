@@ -89,15 +89,6 @@ var _quitApp = function(){
 
 var _netGo = function( exec, query ){
 
-	var reg = REGEX.filter(function( item ){ return item.APP === 'netGo' });
-	reg = reg[0];
-	console.log('[SCRIPT] netGo', arguments, 'cached reg', reg);
-	if( reg.PART_1.test( query ) ){
-		// Lack endind
-		query += '.com'
-	}else if( reg.PART_2.test( query ) ){
-		query = 'www.' + query;
-	}
 	_spawner( 'xdg-open', [query] );
 
 }
@@ -130,14 +121,9 @@ var _getInternalApp = function( app ){
 var REGEX = [
 	{ REG: /PREFERENCE/i, APP: 'preference' , REG2: 'preference' },
 	{ REG: /QUIT/i,		  APP: 'quit' 		, REG2: 'quit' },
-	{ REG: /(?:(?:http|ftp|https)\:\/\/|(?:www\.))([^\.]*)(?:\.com|\.es)?|(?:(?:http|ftp|https)\:\/\/|(?:www\.))?([^\.]*)(?:\.com|\.es)/i, 
-		APP: 'netGo', REG2: 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
-		PART_1: /(?:(?:http|ftp|https)\:\/\/|(?:www\.))([^\.]*)/i,
-		PART_2: /([^\.]*)(?:\.)/i
-	}
+	{ REG: /(?:(?:http|ftp|https)\:\/\/(?:www\.))([^\.]*)(?:\.com|\.es)?|(?:(?:http|ftp|https)\:\/\/(?:www\.))?([^\.]*)(?:\.)/i, APP: 'netGo', REG2: null }
 ]
-/// /(?:(?:http|ftp|https)\:\/\/|(?:www\.))(.*)/i
-/// (?:(?:http|ftp|https)\:\/\/|(?:www\.))?([^\.]*)(?:\.com|\.es)?
+
 var _internalApps = {
 	
 	'preference': {
@@ -163,6 +149,9 @@ var _internalApps = {
 }
 
 var _strSearch = function( str, query ){
+	if( typeof str !== 'string' || typeof query !== 'string' ){
+		return -1;
+	}
 	str = str.toLowerCase();
 	query = query.toLowerCase();
 	return str.indexOf(query);
@@ -193,16 +182,13 @@ var _search = function( query, callback ){
 		// Preferences, Quit, Url
 		REGEX.forEach(function( Q, idx ){
 			var reg = _getRegexForQuery( query );
-			//console.log('query', query, 'regex', Q.REG, 'test', Q.REG.test(query) );
 			if( _strSearch( Q.REG2, query ) !== -1 || Q.REG.test( query ) ){
-				//console.log('Match with', Q.REG2);
 				matches.push( _internalApps[ Q.APP ].wrapper );
 			}
 		})
 		// Broswser History files
 		global.db.query(query, function( err, results ){
 			if( !err ){
-				//console.log('from scripts db query', results);
 				// Deep copy
 				var aux = _getInternalApp('browseHistory');
 				results.forEach(function( result ){
@@ -220,13 +206,11 @@ var _search = function( query, callback ){
 		apps.forEach(function( app, idx ){
 			var reg = _getRegexForQuery( query );
 			if( _strSearch( app.appName, query ) !== -1 ){
-				//console.log('Match with', app.appName);
 				matches.push( app );
 			}
 		})
 
 	}
-	//console.log(matches);
 	if( matches.length === 0 ){
 		matches.push( _internalApps['netSearch'].wrapper );
 	}

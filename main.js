@@ -178,25 +178,6 @@ var _main = function( callback ) {
     ipc.on('mainReady', function( evt ){
         console.log('[MAIN] Window ready');
         _handleShortcut('TOGGLE');
-        // As of now, scripts could not be initialized yet, so this may fail
-        // 
-        // Hotfix: On first start, if the window looses focus and no text has been input,
-        //  for some reason, window do not appear again, even with the shortcut (which gets captured, 
-        //  but does not trigger the handler WTF???)
-        //  BUT, if text has been input, the problem dissappears
-        //  FIX: Send default NetSearch app on startup.
-        //  TODO => Follow execution (related with resize??)
-        //      Which part of the gets to execute on first input so that the problem does not happen?
-        if( scripts ){
-            scripts.search( 'Welcome Back!!', function( err, results ){
-                //console.log('Bindings', results);
-                if( !err && results ){
-                    mainWindow.send( 'resultsForView', results );
-                }
-            })
-        }else{
-            console.log('[MAIN] Scripts unavailable');
-        }
     })
 }
 

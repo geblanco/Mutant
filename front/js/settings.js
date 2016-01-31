@@ -73,16 +73,12 @@ var _exitRecMode = function(){
 }
 
 var _toggleState = function( id ){
-	console.log('_toggleState', id, _currBtn);
 	if( _currBtn === null ){
-		console.log(1);
 		_enterRecMode( id );
 	}else if( _currBtn !== id ){
-		console.log(2);
 		_exitRecMode();
 		_enterRecMode( id );
 	}else{
-		console.log(3);
 		_exitRecMode();
 	}
 }

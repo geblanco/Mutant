@@ -13,7 +13,8 @@ var parentComm = function(){};
 var _requestSize = function( event, noElems, size ){
 
 	var dim = window.getContentSize();
-
+	size = size || baseHeight;
+	
 	function _calculateMaxElements( size ){
 		var i = 0;
 		for(; i*size < maxHeight; i++);
@@ -38,7 +39,6 @@ var _requestSize = function( event, noElems, size ){
 		}
 	}else{
 		window.setContentSize(dim[0], baseHeight);
-		//window.center();
 	}
 }
 
