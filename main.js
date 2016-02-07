@@ -255,8 +255,9 @@ global.async.waterfall([
             callback();
         }
     ], function(){
-        console.log('=========================');
+        console.log('[MAIN] Killing window');
         mainWindow = null;
+        console.log('=========================');
         process.exit(0);
     })
 });

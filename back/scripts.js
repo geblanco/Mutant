@@ -86,7 +86,7 @@ var _quitApp = function(){
 	// Quit app
 	_quitCB();
 }
-
+// TODO => Change URL regex validation
 var _netGo = function( exec, query ){
 
 	var reg = REGEX.filter(function( item ){ return item.APP === 'netGo' });
@@ -128,8 +128,9 @@ var _getInternalApp = function( app ){
 var REGEX = [
 	{ REG: /PREFERENCE/i, APP: 'preference' , REG2: 'preference' },
 	{ REG: /QUIT/i,		  APP: 'quit' 		, REG2: 'quit' },
+	// TODO => Change URL regex validation by URL.parse/validate()
 	{ REG: /(?:(?:http|ftp|https)\:\/\/(?:www\.))([^\.]*)(?:\.com|\.es)?|(?:(?:http|ftp|https)\:\/\/(?:www\.))?([^\.]*)(?:\.)/i, APP: 'netGo', REG2: null, 
-	  REG3: /(?:(?:http|ftp|https)\:\/\/(?:www\.))([^\.]*)/i
+	  REG3: /((http|ftp|https)\:\/\/)(www\.)?|(www\.)([^\.]*)/i
 	}
 ]
 
