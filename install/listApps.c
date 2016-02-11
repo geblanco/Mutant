@@ -72,11 +72,12 @@ int main(int argc, char const *argv[])
     Queue queue;
     FILE* f;
     int exitCode = 0;
-    if (!(f = fopen("../cached/apps.json", "w"))){
+    printf("Working on file %s\n", argv[1]);
+    if (!(f = fopen(argv[1], "w"))){
         std::cout<<"Unable to open output file"<<std::endl;
         exitCode = 1;
     }else{
-        searchApp(queue, argc > 1 ? argv[1] : NULL);
+        searchApp(queue, argc > 2 ? argv[2] : NULL);
         std::vector<qpair>::iterator it;
         fprintf(f, "[");
         int i = 0;
@@ -108,5 +109,5 @@ int main(int argc, char const *argv[])
         fprintf(f, "]\n");
         fclose(f);
     }
-    return 0;
+    return exitCode;
 }
