@@ -36,7 +36,8 @@ node_modules
 back/listApps
 
 # Icons
-cached/*
+misc/apps.json
+misc/icons/*
 
 # Tests
 refs

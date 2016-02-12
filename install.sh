@@ -199,8 +199,11 @@ echo "= installing to $(pwd)"
 
 # If it's a pacman/yaourt based manager it will need base-devel for most operations
 # although probably is yet installed
-if [ "$pmanager" == "pacman" ]; then
+if [ "$pmanager" == "pacman" || "$pmanager" == "yaourt" ]; then
 	install linux base-devel
+else
+	# Basic build tools - make... (eg: needed in sqlite nodejs driver)
+	install linux build-essentials
 fi
 
 # Check for pkg-config and install if needed

@@ -38,7 +38,7 @@ My front-end skill-set is poor, any support there would be much appreciated.
 After using qdore's mutate for almost a year and customizing it a lot I miss some functionality so I decided to make my own version of it.
 
 ## Roadmap
-* Install script (by now just set things up)
+* ~~Install script (by now just set things up)~~
 * ~~Settings window~~ (Shortcut override)
 * Use and launch custom scripts (search on given scripts folder)
 * ~~Search on more browsers history~~ (By now spport for Chrome and Firefox)
@@ -50,3 +50,5 @@ After using qdore's mutate for almost a year and customizing it a lot I miss som
 
 ## Notes
 One of the problems of mutate is theme detection (used for icon selection), which is a fail of gtk lib, here I solved it passing the name of the current theme by parameter. In a near future there shold be a script for detecting theme (which depends on the distro)
+
+Installer script was taken partially from [node-tensorflow](https://github.com/node-tensorflow/node-tensorflow)

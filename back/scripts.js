@@ -184,7 +184,7 @@ var _search = function( query, callback ){
 	
 	// Load apps
 	if( !apps ){
-		apps = require(__dirname + '/../cached/apps.json');
+		apps = require(__dirname + '/../misc/apps.json');
 	}
 	
 	if( query !== '' && query !== ' '){
@@ -230,7 +230,7 @@ var _search = function( query, callback ){
 
 var _cacheFiles = function( cmd, callback ){
 	console.log('Spawning cacheFiles', cmd);
-	var args = [ upath.join(__dirname, '../cached/apps.json') ];
+	var args = [ upath.join(__dirname, '../misc/apps.json') ];
 	if( cmd.trim() !== '' ){
 		args.push(cmd);
 	}
@@ -244,12 +244,12 @@ var _cacheFiles = function( cmd, callback ){
 		if( code ){
 			console.log('[MAIN] ERROR app list could not correctly');
 		}else{
-			var apps = require(__dirname + '/../cached/apps.json');
+			var apps = require(__dirname + '/../misc/apps.json');
 			var os = require('os');
 			
 			var Rsvg = require('librsvg').Rsvg;
 			var fs = require('fs');
-			var dstDir = global.upath.join( __dirname, '/../cached/icons');
+			var dstDir = global.upath.join( __dirname, '/../misc/icons');
 			 
 			var changes = [];
 			var mkdirp = require('mkdirp');
@@ -308,7 +308,7 @@ var _cacheFiles = function( cmd, callback ){
 				changes.forEach(function( item ){
 					apps[ item.idx ].iconPath = item.mod;
 				});
-				fs.writeFile( __dirname + '/../cached/apps.json', JSON.stringify(apps, null, 4), callback );
+				fs.writeFile( __dirname + '/../misc/apps.json', JSON.stringify(apps, null, 4), callback );
 			});
 		}
 	})
