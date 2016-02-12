@@ -1,10 +1,5 @@
 #!/bin/bash
 
-<<<<<<< HEAD
-# Install dependencies
-sudo apt-get install -y pkg-config gtk+-3.0 librsvg2-dev
-sudo npm install
-=======
 # Change dir to shell script dir
 cd $(dirname $0)
 
@@ -232,7 +227,6 @@ echo ""
 echo "= starting setup"
 
 # Compile app list program
->>>>>>> browser-history
 cd install
 	./gtkcc.sh listApps
 	# By now, just setup for Ubuntu theme
@@ -245,10 +239,6 @@ cd install
 		}\
 	}" > ../misc/settings.json
 cd ..
-<<<<<<< HEAD
-# Add necessary folders
-[[ -d ./cached ]] || mkdir ./cached
-=======
 
 # Make the launcher
 echo "[Desktop Entry]" > TheMutant.desktop
@@ -266,10 +256,9 @@ echo "Categories=Utility;" >> TheMutant.desktop
 mkdir -p ~/.config/autostart
 cp TheMutant.desktop ~/.config/autostart/
 # Make it available for menu launchers
-echo "If you want the application to be visible from the menu, move TheMutant.desktop to /usr/share/applications/"
-echo "cp TheMutant.desktop /usr/share/applications"
-# cp TheMutant.desktop /usr/share/applications
->>>>>>> browser-history
+# echo "If you want the application to be visible from the menu, move TheMutant.desktop to /usr/share/applications/"
+# echo "cp TheMutant.desktop /usr/share/applications"
+cp TheMutant.desktop /usr/share/applications
 
 # Clean
 [[ -f ./back/listApps ]] && rm ./back/listApps
