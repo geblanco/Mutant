@@ -86,8 +86,15 @@ var _quitApp = function(){
 	// Quit app
 	_quitCB();
 }
-
+// TODO => Change URL regex validation
 var _netGo = function( exec, query ){
+
+	var reg = REGEX.filter(function( item ){ return item.APP === 'netGo' });
+	reg = reg[0];
+	if( !reg.REG3.test( query ) ){
+		// Lack starting www....
+		query = 'www.' + query;
+	}
 
 	_spawner( 'xdg-open', [query] );
 
@@ -121,7 +128,10 @@ var _getInternalApp = function( app ){
 var REGEX = [
 	{ REG: /PREFERENCE/i, APP: 'preference' , REG2: 'preference' },
 	{ REG: /QUIT/i,		  APP: 'quit' 		, REG2: 'quit' },
-	{ REG: /(?:(?:http|ftp|https)\:\/\/(?:www\.))([^\.]*)(?:\.com|\.es)?|(?:(?:http|ftp|https)\:\/\/(?:www\.))?([^\.]*)(?:\.)/i, APP: 'netGo', REG2: null }
+	// TODO => Change URL regex validation by URL.parse/validate()
+	{ REG: /(?:(?:http|ftp|https)\:\/\/(?:www\.))([^\.]*)(?:\.com|\.es)?|(?:(?:http|ftp|https)\:\/\/(?:www\.))?([^\.]*)(?:\.)/i, APP: 'netGo', REG2: null, 
+	  REG3: /((http|ftp|https)\:\/\/)(www\.)?|(www\.)([^\.]*)/i
+	}
 ]
 
 var _internalApps = {
@@ -174,7 +184,7 @@ var _search = function( query, callback ){
 	
 	// Load apps
 	if( !apps ){
-		apps = require(__dirname + '/../cached/apps.json');
+		apps = require(__dirname + '/../misc/apps.json');
 	}
 	
 	if( query !== '' && query !== ' '){
@@ -220,7 +230,7 @@ var _search = function( query, callback ){
 
 var _cacheFiles = function( cmd, callback ){
 	console.log('Spawning cacheFiles', cmd);
-	var args = [];
+	var args = [ upath.join(__dirname, '../misc/apps.json') ];
 	if( cmd.trim() !== '' ){
 		args.push(cmd);
 	}
@@ -229,74 +239,78 @@ var _cacheFiles = function( cmd, callback ){
 
 	ch.stdout.on('data', function(data){ console.log(data.toString('utf8')); });
 	
-	ch.on('close', function(){
-	
-		var apps = require(__dirname + '/../cached/apps.json');
-		var os = require('os');
-		
-		var Rsvg = require('librsvg').Rsvg;
-		var fs = require('fs');
-		var dstDir = global.upath.join( __dirname, '/../cached/icons');
-		 
-		var changes = [];
-		var mkdirp = require('mkdirp');
-
-		try{ fs.lstatSync( dstDir ); }catch(e){ mkdirp.sync( dstDir ); }
-		
-		global.async.forEachOf(apps, function( app, idx, callback ){
+	ch.on('close', function( code ){
+		console.log('closed list apps ', arguments);
+		if( code ){
+			console.log('[MAIN] ERROR app list could not correctly');
+		}else{
+			var apps = require(__dirname + '/../misc/apps.json');
+			var os = require('os');
 			
-			//console.log('forEach');
-			if( app.iconPath !== '__unknown__' ){
-				// Check svg
-				var trimmed = global.upath.removeExt( app.iconPath, 'svg' );
-				if( trimmed === app.iconPath ){
-					// Non svg, skip
-					callback( null );
-				}else{
-					// svg, check if yet converted, else, convert it
-					var mod = trimmed.split('/');
+			var Rsvg = require('librsvg').Rsvg;
+			var fs = require('fs');
+			var dstDir = global.upath.join( __dirname, '/../misc/icons');
+			 
+			var changes = [];
+			var mkdirp = require('mkdirp');
 
-					mod = mod[mod.length-1];
-					mod = global.upath.addExt(mod, 'png');
-					mod = global.upath.join( dstDir, mod );
-					fs.lstat( mod, function( err ){
-						// Icon did exist
-						if( !err ){
-							changes.push({ 'idx': idx, 'mod': mod });
-						    callback( null );
-						}else{
-							var svg = new Rsvg();
-							// When finishing reading SVG, render and save as PNG image. 
-							svg.on('finish', function() {
-								fs.writeFile(mod, svg.render({
-									format: 'png',
-									width: 48,
-									height: 48
-								}).data, function( err, result ){
-								    // if( err ) -- No change
-								    if( !err ){
-								    	changes.push({ 'idx': idx, 'mod': mod });
-								    }
-								    callback( null );
+			try{ fs.lstatSync( dstDir ); }catch(e){ mkdirp.sync( dstDir ); }
+			
+			global.async.forEachOf(apps, function( app, idx, callback ){
+				
+				//console.log('forEach');
+				if( app.iconPath !== '__unknown__' ){
+					// Check svg
+					var trimmed = global.upath.removeExt( app.iconPath, 'svg' );
+					if( trimmed === app.iconPath ){
+						// Non svg, skip
+						callback( null );
+					}else{
+						// svg, check if yet converted, else, convert it
+						var mod = trimmed.split('/');
+
+						mod = mod[mod.length-1];
+						mod = global.upath.addExt(mod, 'png');
+						mod = global.upath.join( dstDir, mod );
+						fs.lstat( mod, function( err ){
+							// Icon did exist
+							if( !err ){
+								changes.push({ 'idx': idx, 'mod': mod });
+							    callback( null );
+							}else{
+								var svg = new Rsvg();
+								// When finishing reading SVG, render and save as PNG image. 
+								svg.on('finish', function() {
+									fs.writeFile(mod, svg.render({
+										format: 'png',
+										width: 48,
+										height: 48
+									}).data, function( err, result ){
+									    // if( err ) -- No change
+									    if( !err ){
+									    	changes.push({ 'idx': idx, 'mod': mod });
+									    }
+									    callback( null );
+									});
 								});
-							});
-							 
-							// Stream SVG file into render instance. 
-							fs.createReadStream( app.iconPath ).pipe(svg);
-						}
-					})
+								 
+								// Stream SVG file into render instance. 
+								fs.createReadStream( app.iconPath ).pipe(svg);
+							}
+						})
+					}
+				}else{
+					callback( null );
 				}
-			}else{
-				callback( null );
-			}
 
-		}, function( err ){
-			//console.log('done processing', 'changes', changes, arguments);
-			changes.forEach(function( item ){
-				apps[ item.idx ].iconPath = item.mod;
+			}, function( err ){
+				//console.log('done processing', 'changes', changes, arguments);
+				changes.forEach(function( item ){
+					apps[ item.idx ].iconPath = item.mod;
+				});
+				fs.writeFile( __dirname + '/../misc/apps.json', JSON.stringify(apps, null, 4), callback );
 			});
-			fs.writeFile( __dirname + '/../cached/apps.json', JSON.stringify(apps, null, 4), callback );
-		});
+		}
 	})
 }
 
