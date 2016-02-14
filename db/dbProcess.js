@@ -8,6 +8,7 @@ var server 	= vertigo.createServer( 8000 );
 var dbs		= [];
 
 var _query = function( db, query, callback ){
+
 	db.DB.all(db.query, query, function( err, rows ){
 		var results = [];
 		if( err ) callback( err );
@@ -28,6 +29,7 @@ var _query = function( db, query, callback ){
 			callback(null, JSON.stringify(results));
 		}
 	})
+	
 }
 var _quit = function( callback ){
 	console.log('[DB PROC] close...');

@@ -131,6 +131,7 @@ var _main = function( callback ) {
                 break;
             case 'quit':
                 console.log('[MAIN] Quit evt');
+                ipc.removeAllListeners();
                 mainWindow.removeListener('closed', callback);
                 process.removeListener('SIGINT', callback);
                 callback();
@@ -211,7 +212,8 @@ global.async.waterfall([
                 // Cache files on startup so file is catchable
                 console.log('[MAIN] Cache files');
                 scripts = require(global.upath.join(__dirname, './back', 'scripts'));
-                scripts.cacheFiles( global.settings.get('theme'), function( err, result ){
+                var util = require(global.upath.join(__dirname, './back', 'utils'));
+                util.cacheFiles( global.settings.get('theme'), function( err, result ){
                     if( err ) console.log(err);
                     callback( null );
                 });

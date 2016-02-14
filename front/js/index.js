@@ -3,22 +3,13 @@
 var $ = require('jquery');
 var ipc = require('electron').ipcRenderer;
 var prevQ = '', selected = 0;
-var _defaultIconPath = '../icons/application-x-executable.png';
+var _defaultIconPath = '../icons/application.png';
+var MAX_CHAR = 100;
 
 var _constructItem = function( selected, id, item ){
 	// Item should have name and sub text, optionally an icon too
 	// If no icon is provided, fall back to default
 	// Add on click too
-	/*return $('<div/>', {
-		"class": 'list-group-item ' + (selected?'active':''),
-		"id": id
-	}).append($('<h4/>', {
-		"class": 'list-group-item-heading',
-		"text": item.name
-	})).append($('<p/>', {
-		"class": 'list-group-item-text',
-		"text": item.subText
-	}))*/
 	var path = item.iconPath.split('/');
 	//console.log(path);
 	path = path.length < 2 ? _defaultIconPath : item.iconPath;
@@ -48,12 +39,12 @@ var _constructItem = function( selected, id, item ){
 			}).append(
 				$('<h4/>', {
 					"class": 'list-group-item-heading',
-					"text": item.appName.length < 80? item.appName : item.appName.substring(0, 80) + '...'
+					"text": item.appName.length < MAX_CHAR? item.appName : item.appName.substring(0, MAX_CHAR) + '...'
 				})
 			).append(
 				$('<p/>', {
 					"class": 'list-group-item-text',
-					"text": item.subText === '__unknown__' ? '' : item.subText.length < 80? item.subText : item.subText.substring(0, 80) + '...',
+					"text": item.subText === '__unknown__' ? '' : item.subText.length < MAX_CHAR? item.subText : item.subText.substring(0, MAX_CHAR) + '...',
 				})
 			)
 		)

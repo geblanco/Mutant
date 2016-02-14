@@ -1,0 +1,8 @@
+{
+	"preference"	: "./preferenceApp",
+	"netGo"			: "./netGoApp",
+	"netSearch"		: "./netSearchApp",
+	"browserHistory": "./browserHistoryApp",
+	"githubSearch"	: "./githubSearchApp",
+	"wikiSearch"	: "./wikiSearchApp"
+}

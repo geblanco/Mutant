@@ -28,7 +28,7 @@ var _constructItem = function( id, item ){
 		$('<th/>').append(
 			$('<button/>', {
 				type: 'button',
-		    	text: item.shortcut,
+		    	text: item.shortcut || 'NOT SET',
 		    	class: 'btn btn-default',
 		    	id: 'button-' + id,
 		    	click: function(){ _toggleState( id ) }
@@ -54,7 +54,7 @@ var _enterRecMode = function( id ){
 
 var _exitRecMode = function(){
 	console.log('Called _exitRecMode');
-	_state = IDLE
+	_state = IDLE;
 	// Stop recording
 	$('#pref-panel').removeClass('panel-danger');
 	$('#pref-panel').addClass('panel-default');
@@ -114,6 +114,7 @@ $(function(){
 		// Shorcuts come in the form: 
 		// { "command": "name", "shorctut": "Keys" 
 		// (e.g.: "command": "launch", "shortcut":  "Ctrl+Space")
+		list = JSON.parse( list );
 		console.log('resultsForView', list);
 		if( list.length ){
 			list.forEach(function( item, idx ){

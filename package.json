@@ -14,8 +14,8 @@
   },
   "main": "main.js",
   "dependencies": {
-    "electron-settings": "^0.1.1",
     "async": "*",
+    "electron-settings": "^0.1.1",
     "jquery": "2.1.4",
     "librsvg": "*",
     "lodash": "*",
