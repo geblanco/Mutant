@@ -2,7 +2,7 @@
 
 var _spawner = global.spawner;
 
-var _browseLaunch = function( exec, query ){
+var _browserLaunch = function( exec, query ){
 	// Unwrap object, link is on subtext
 	query = exec.subText;
 	var reg = /((http|ftp|https)\:\/\/)(www\.)?|(www\.)([^\.]*)/i;
@@ -16,11 +16,11 @@ var _browseLaunch = function( exec, query ){
 }
 
 module.exports = {
-	fn: _browseLaunch,
+	fn: _browserLaunch,
 	wrapper: {
 		"appName": "",
 		"subText": "",
-		"appCmd": "browseHistory",
+		"appCmd": "browserHistory",
 		"iconPath": "../icons/link.png",
 		"internal": true
 	}
