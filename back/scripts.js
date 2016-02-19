@@ -4,6 +4,7 @@ var BrowserWindow = require('electron').BrowserWindow;
 var ipc   		= require('electron').ipcMain;
 var spawn 		= require('child_process').spawn;
 var bindings 	= require(global.upath.join(__dirname, '/../', 'bridge/bindings'));
+var router 		= (function(){ var r = require('../router/index'); return new r(); })()
 // Generic URI OS-provided launcher
 var baseCmd 	= 'xdg-open';
 // Cached apps from user
@@ -12,28 +13,6 @@ var _spawner 	= require('./utils').spawner;
 var apps 		= null;
 // Internal apps scripts
 var _applications	= require(global.upath.join(__dirname, '/../', 'apps/index'));
-
-var _quitCB 	= function(){};
-var _newSCutCB 	= function(){};
-
-var _refreshCB = function(){
-
-	require('./utils').cacheFiles( global.settings.get('theme'), function( err ){
-		if( err ){
-			console.log('[SCRIPT] Reload apps failed');
-		}else{
-			apps = require(__dirname + '/../misc/apps.json');
-		}
-	});
-
-}
-
-// Used for passing the correct callback to the executor
-var _specialApps = {
-	'quit': _quitCB,
-	'preference': _newSCutCB,
-	'refresh': _refreshCB.bind( this )
-}
 
 var _strSearch = function( str, query ){
 	if( typeof str !== 'string' || typeof query !== 'string' ){
@@ -111,13 +90,23 @@ var _processAndLaunch = function( exec, query ){
 		// Caveat, preference and quit apps need a callback used to persist settings
 		// and to launch quit code
 		// This wont be needed when the MVC model is used.
-		_applications.launchApp( cmd, _specialApps[ cmd ] || function(){}, exec, query );
+		_applications.launchApp( cmd, exec, query );
 	}
 }
+
+router.on('refreshApps', function(){
+	
+	require('./utils').cacheFiles( global.settings.get('theme'), function( err ){
+		if( err ){
+			console.log('[SCRIPT] Reload apps failed');
+		}else{
+			apps = require(__dirname + '/../misc/apps.json');
+		}
+	});
+	
+})
 
 module.exports = {
 	search: _search,
 	processAndLaunch: _processAndLaunch,
-	setNewSCutCallback: function( cb ){ _newSCutCB = cb; _specialApps['preference'] = cb; },
-	setQuitCallback: function( cb ){ _quitCB = cb; _specialApps['quit'] = cb; }
 }

@@ -4,5 +4,7 @@
 	"netSearch"		: "./netSearchApp",
 	"browserHistory": "./browserHistoryApp",
 	"githubSearch"	: "./githubSearchApp",
-	"wikiSearch"	: "./wikiSearchApp"
+	"wikiSearch"	: "./wikiSearchApp",
+	"quitApp"		: "./quitApp",
+	"refreshApp"	: "./refreshApp"
 }

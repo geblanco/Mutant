@@ -34,7 +34,7 @@ module.exports.cacheFiles = function( cmd, callback ){
 	ch.stdout.on('data', function(data){ console.log(data.toString('utf8')); });
 	
 	ch.on('close', function( code ){
-		console.log('closed list apps ', arguments);
+
 		if( code ){
 			console.log('[MAIN] ERROR app list could not correctly');
 		}else{

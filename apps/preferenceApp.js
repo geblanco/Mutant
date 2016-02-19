@@ -2,8 +2,9 @@
 
 var ipc = require('electron').ipcMain;
 var BrowserWindow = require('electron').BrowserWindow;
+var router = (function(){ var r = require('../router/index'); return new r(); })()
 
-var _launchPreferences = function( callback ){
+var _launchPreferences = function(){
 	// Launch Preferences window
 	console.log('[PREFERENCE APP] launchPreferences');
 	
@@ -38,11 +39,11 @@ var _launchPreferences = function( callback ){
 
 	function _sendToBack( evt, shortcut ){
     	console.log('[PREFERENCE APP] shortcutChange', shortcut);
-    	callback( shortcut );
+    	router.send('shortcutChange', shortcut);
     }
 
     ipc.on('prefsReady', _send);
-    ipc.on('shortcutChange', _sendToBack);
+    ipc.on('shortcutChange', _sendToBack );
 
 	settingsWindow.on('close', function( evt ){
 		// nullify

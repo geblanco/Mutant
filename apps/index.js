@@ -1,43 +1,14 @@
 'use strict';
 
 var _spawner = require(global.upath.join(__dirname, '/../', 'back/utils')).spawner;
+
 // Apps index
 var _appIndex = require('./index.json');
-var _specialApps = ['quit', 'preference', 'refresh'];
+//var _specialApps = ['quit', 'preference', 'refresh'];
 // Real applications
 var _internalApps = {};
 // Regex for each application
 var REGEX = [];
-
-// Really dummy application, used like this to continue the workflow
-// In a near future this will propagate a close event on all applications
-// This really has to be internal
-var _quitApp = {
-	fn: function( cb ){
-		// Quit app
-		cb();
-	},
-	wrapper: {
-		"appName": "Quit Mutant",
-		"subText": "Quit the App",
-		"appCmd": "quit",
-		"iconPath": "../icons/quit.png",
-		"internal": true
-	}
-}
-
-var _refreshApp = {
-	fn: function( cb ){
-		cb();
-	},
-	wrapper: {
-		"appName": "Refresh Mutant",
-		"subText": "Refresh Apps index, useful when a new application has been installed and you want it to be catched by Mutant",
-		"appCmd": "refresh",
-		"iconPath": "../icons/refresh.png",
-		"internal": true
-	}
-}
 
 // Util
 var _strSearch = function( str, query ){
@@ -67,24 +38,6 @@ var _searchApp = function( query ){
 
 }
 
-var _loadInternarls = function(){
-
-	// Load internals refresh and quit
-	_internalApps[ 'quit' ] = _quitApp;
-	REGEX.push({
-		REG: /QUIT/i,
-		REG2: 'quit',
-		APP: 'quit'
-	});
-	_internalApps[ 'refresh' ] = _refreshApp;
-	REGEX.push({
-		REG: /REFRESH/i,
-		REG2: 'refresh',
-		APP: 'refresh'
-	});
-
-}
-
 var _loadApplications = function(){
 
 	// Reload index
@@ -105,10 +58,9 @@ var _loadApplications = function(){
 			}
 			_internalApps[ mod ] = _app;
 		}catch(e){
-			console.log('[LOADER] ERROR Failed loading application', mod);
+			console.log('[LOADER] ERROR Failed loading application', mod, e);
 		}
 	}
-	_loadInternarls();
 
 }
 
@@ -126,16 +78,10 @@ var _getInternalApp = function( app ){
 	
 }
 
-var _launchApp = function( cmd, callback, exec, query ){
-	// Caveat, preference and quit apps need a callback used to persist settings
-	// and to launch quit code
-	// This wont be needed when the MVC model is used.
-	if( _specialApps.indexOf( cmd ) !== -1 ){
-		_internalApps[ cmd ].fn( callback );
-	}else{
-		_internalApps[ cmd ].fn( exec, query );
-	}
+var _launchApp = function( cmd, exec, query ){
 	
+	_internalApps[ cmd ].fn( exec, query );	
+
 }
 
 module.exports = {

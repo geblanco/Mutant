@@ -13,6 +13,9 @@ var globalShortcut= electron.globalShortcut;
 var screen        = null;
 var scripts       = null;
 var ready         = null;
+var router        = null;
+//var router        = function(){ let r = require('./router/index'); return new r() }();
+var Router        = require('./router/index');
 var bindings      = require( global.upath.join(__dirname, '/bridge/bindings') );
 // ********************************************
 
@@ -73,6 +76,7 @@ var _handleShortcut = function( evt ){
 }
 
 var _handleNewShortcut = function( shortcut ){
+    console.log('_handleNewShortcut', shortcut);
     var scut = Object.keys(shortcut)[0];
     var currScuts = global.settings.get('shortcuts');
     if( currScuts.hasOwnProperty( scut ) ){
@@ -109,6 +113,8 @@ var _main = function( callback ) {
         title: "The Mutant"
     });
 
+    router = new Router('MAIN', mainWindow);
+
     // Load the main window.
     console.log('[MAIN] Load index');
     mainWindow.loadURL('file://' + global.upath.join( __dirname, '/front/html/index.html' ) );
@@ -117,7 +123,25 @@ var _main = function( callback ) {
     // Pass a function to the bridge so that it can call it when it needs anything,
     // by now just hide and quit
     console.log('[MAIN] Setup Bindings');
-    bindings.setup( mainWindow, screen.getDisplayNearestPoint( screen.getCursorScreenPoint() ), function( evt, arg ){
+    
+    router.on('shortcutChange', function( arg ){
+        console.log('[MAIN] New Shortcut evt');
+        _handleNewShortcut( arg );
+    })
+    router.on('hide', function(){
+        console.log('[MAIN] Hide evt');
+        _handleShortcut('OFF');
+    })
+    router.on('quit', function(){
+        console.log('[MAIN] Quit evt');
+        ipc.removeAllListeners();
+        mainWindow.removeListener('closed', callback);
+        process.removeListener('SIGINT', callback);
+        callback();
+    })
+    
+    bindings.setup( mainWindow, screen.getDisplayNearestPoint(screen.getCursorScreenPoint()) );
+    /*function( evt, arg ){
         switch( evt ){
             case 'newShortcut':
                 console.log('[MAIN] New Shortcut evt');
@@ -138,7 +162,7 @@ var _main = function( callback ) {
                 break;
             default: break;
         }
-    });
+    });*/
     // mainWindow.openDevTools();
 
     // Register evts and shortcuts
