@@ -14,7 +14,6 @@ var screen        = null;
 var scripts       = null;
 var ready         = null;
 var router        = null;
-//var router        = function(){ let r = require('./router/index'); return new r() }();
 var Router        = require('./router/index');
 var bindings      = require( global.upath.join(__dirname, '/bridge/bindings') );
 // ********************************************
@@ -141,30 +140,7 @@ var _main = function( callback ) {
     })
     
     bindings.setup( mainWindow, screen.getDisplayNearestPoint(screen.getCursorScreenPoint()) );
-    /*function( evt, arg ){
-        switch( evt ){
-            case 'newShortcut':
-                console.log('[MAIN] New Shortcut evt');
-                _handleNewShortcut( arg );
-                break;
-            case 'hide':
-                // Shortcut for inside window close 
-                // (used by exec, upon exec call hide window)
-                console.log('[MAIN] Hide evt');
-                _handleShortcut('OFF');
-                break;
-            case 'quit':
-                console.log('[MAIN] Quit evt');
-                ipc.removeAllListeners();
-                mainWindow.removeListener('closed', callback);
-                process.removeListener('SIGINT', callback);
-                callback();
-                break;
-            default: break;
-        }
-    });*/
-    // mainWindow.openDevTools();
-
+    
     // Register evts and shortcuts
     mainWindow.on('blur', _handleShortcut);
     // Register shortcut

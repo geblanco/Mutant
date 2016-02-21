@@ -5,9 +5,7 @@ var ipc   		= require('electron').ipcMain;
 var spawn 		= require('child_process').spawn;
 var bindings 	= require(global.upath.join(__dirname, '/../', 'bridge/bindings'));
 var router 		= (function(){ var r = require('../router/index'); return new r(); })()
-// Generic URI OS-provided launcher
-var baseCmd 	= 'xdg-open';
-// Cached apps from user
+// Executor
 var _spawner 	= require('./utils').spawner;
 // User apps
 var apps 		= null;
@@ -96,14 +94,19 @@ var _processAndLaunch = function( exec, query ){
 
 router.on('refreshApps', function(){
 	
-	require('./utils').cacheFiles( global.settings.get('theme'), function( err ){
-		if( err ){
-			console.log('[SCRIPT] Reload apps failed');
-		}else{
-			apps = require(__dirname + '/../misc/apps.json');
-		}
-	});
+	try{
+
+		require('fs').unlinkSync( __dirname + '/../misc/apps.json' );
+
+		require('./utils').cacheFiles( global.settings.get('theme'), function( err ){
+			if( err ){
+				console.log('[SCRIPT] Reload apps failed');
+			}else{
+				apps = require(__dirname + '/../misc/apps.json');
+			}
+		});
 	
+	}catch( e ){ console.log('[SCRIPT] ERROR Unable to refresh apps', e); }
 })
 
 module.exports = {
