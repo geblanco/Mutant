@@ -2,15 +2,17 @@
 
 var ipc = require('electron').ipcMain;
 var BrowserWindow = require('electron').BrowserWindow;
-var router = (function(){ var r = require('../router/index'); return new r(); })()
+var router = (function(){ var r = require('ElectronRouter'); return new r(); })()
 
 var _launchPreferences = function(){
 	// Launch Preferences window
 	console.log('[PREFERENCE APP] launchPreferences');
-	
+
+    var apps = JSON.stringify(_prepare( global.settings.get('shortcuts') ));
+	console.log('app', apps.length);
 	var settingsWindow = new BrowserWindow({
         width: 600,
-        height: 300,
+        height: (10 * apps.length),
         center: true,
         resizable: true,
         darkTheme: true,
@@ -27,14 +29,15 @@ var _launchPreferences = function(){
     	Object.keys(shortcuts).forEach(function( key ){
     		ret.push({
                 'command' : key,
-                'shortcut': shortcuts[ key ],
+                'shortcut': shortcuts[ key ].cmd,
+                'application': shortcuts[ key ].application,
             });
     	})
     	return ret;
     }
 	
 	function _send(){
-		settingsWindow.send('resultsForView', JSON.stringify(_prepare( global.settings.get('shortcuts') )));
+		settingsWindow.send('resultsForView', apps);
 	}
 
 	function _sendToBack( evt, shortcut ){
@@ -42,8 +45,17 @@ var _launchPreferences = function(){
     	router.send('shortcutChange', shortcut);
     }
 
+    function _saveAppShortcut( evt, shortcut ){
+        console.log('[PREFERENCE APP] save app shortcut', shortcut);
+        var app = Object.keys(shortcut)[0]
+        global.settings.set('shortcuts.' + app, { cmd: shortcut[app], application: true });
+        router.send('newAppShortcut', app);
+        console.log(global.settings.get('shortcuts'))
+    }
+
     ipc.on('prefsReady', _send);
     ipc.on('shortcutChange', _sendToBack );
+    ipc.on('shortcutChangeApplication', _saveAppShortcut);
 
 	settingsWindow.on('close', function( evt ){
 		// nullify

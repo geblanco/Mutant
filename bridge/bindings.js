@@ -8,20 +8,22 @@ var maxElements = null;
 var baseHeight = null;
 var ipc = require('electron').ipcMain;
 var scripts = require( global.upath.join(__dirname, '/../back/scripts') );
-var router = (function(){ var r = require('../router/index'); return new r(); })()
+var router = (function(){ var r = require('ElectronRouter'); return new r(); })()
 
 var _requestSize = function( event, noElems, size ){
 
 	var dim = window.getContentSize();
 	size = size || baseHeight;
-	
+
+	//console.log('[BRIDGE] Size change requested', noElems, size, baseHeight);
+
 	function _calculateMaxElements( size ){
 		var i = 0;
 		for(; i*size < maxHeight; i++);
 		maxElements = i-2;
 		console.log('[BRIDGE] Calculation', size, maxHeight, i);
 	}
-	//console.log('Requested size change', noElems, size);
+	//console.log('[BRIDGE] Requested size change', noElems, size);
 	if( maxElements === null ){
 		_calculateMaxElements(size);
 	}

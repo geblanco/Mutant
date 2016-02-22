@@ -14,7 +14,7 @@ var screen        = null;
 var scripts       = null;
 var ready         = null;
 var router        = null;
-var Router        = require('./router/index');
+var Router        = require('ElectronRouter');
 var bindings      = require( global.upath.join(__dirname, '/bridge/bindings') );
 // ********************************************
 
@@ -80,11 +80,14 @@ var _handleNewShortcut = function( shortcut ){
     var currScuts = global.settings.get('shortcuts');
     if( currScuts.hasOwnProperty( scut ) ){
         console.log('[MAIN]', '_handleNewShortcut', scut, 'Shortcut', shortcut[scut]);
-        globalShortcut.unregister( global.settings.get('shortcuts')[scut] );
+        console.log('[MAIN]', '_handleNewShortcut', 'unregister', currScuts[scut]);
+        console.log('[MAIN]', '_handleNewShortcut', 'register', shortcut[scut]);
+        console.log('[MAIN]', '_handleNewShortcut', 'set', shortcut[scut]);
+        globalShortcut.unregister( currScuts[scut].cmd );
         globalShortcut.register( shortcut[scut], function(){
-            _handleShortcut('TOGGLE');
+           _handleShortcut('TOGGLE');
         });
-        global.settings.set(('shortcuts' + '.' + scut), shortcut[scut]);
+        global.settings.set(('shortcuts' + '.' + scut + '.cmd'), shortcut[scut]);
     }else{
         console.log('[MAIN]', '_handleNewShortcut', 'ENOENT Shortcut');
     }
@@ -97,7 +100,7 @@ var _ready = function(){
 var _main = function( callback ) {
     //var theme = require( global.upath.join(__dirname, 'misc', 'setup.json'));
     // General Setup
-    var launchShortcut = global.settings.get('shortcuts')['launch'];
+    var launchShortcut = global.settings.get('shortcuts')['launch'].cmd;
     screen = electron.screen;
     console.log('[MAIN] Create window');
     // Create the browser window.
@@ -105,7 +108,7 @@ var _main = function( callback ) {
         width: 600,
         height: 75,
         center: true,
-        resizable: true,
+        resizable: false,
         darkTheme: true,
         frame: false,
         show: false,
@@ -180,6 +183,8 @@ var _main = function( callback ) {
         console.log('[MAIN] Window ready');
         _handleShortcut('TOGGLE');
     })
+
+    //mainWindow.openDevTools();
 }
 
 // Quit when all windows are closed.
@@ -191,7 +196,16 @@ global.async.waterfall([
     function( callback ){
         if( Object.keys(global.settings.get()).length === 0 ){
             // First launch
+            // default shortcuts
             var localSettings = require( global.upath.join(__dirname, 'misc', 'settings.json') );
+            // default apps shortcuts
+            var appsShortcuts = require( global.upath.join(__dirname, 'misc', '_in_apps.json') );
+            Object.keys( appsShortcuts ).forEach(function( key ){
+                localSettings.shortcuts[key] = {
+                    cmd: appsShortcuts[key].shortcut || '_unset_',
+                    application: true
+                };
+            })
             // General Setup
             global.settings.set({
                 theme: localSettings.theme,

@@ -4,7 +4,7 @@ var BrowserWindow = require('electron').BrowserWindow;
 var ipc   		= require('electron').ipcMain;
 var spawn 		= require('child_process').spawn;
 var bindings 	= require(global.upath.join(__dirname, '/../', 'bridge/bindings'));
-var router 		= (function(){ var r = require('../router/index'); return new r(); })()
+var router 		= (function(){ var r = require('ElectronRouter'); return new r(); })()
 // Executor
 var _spawner 	= require('./utils').spawner;
 // User apps

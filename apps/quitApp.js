@@ -1,6 +1,6 @@
 'use strict';
 
-var router = (function(){ var r = require('../router/index'); return new r(); })()
+var router = (function(){ var r = require('ElectronRouter'); return new r(); })()
 
 var exp = {
 	fn: router.send.bind( router, 'quit' ),

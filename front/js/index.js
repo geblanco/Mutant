@@ -17,7 +17,8 @@ var _constructItem = function( selected, id, item ){
 	return (
 		$('<div/>', {
 			"class": 'list-group-item row ' + (selected?'active':''),
-			"id": id
+			"id": id,
+			"css":{ cursor: 'pointer' }
 		}).append(
 			$('<div/>', {
 				"class": 'icon col-xs-3 col-md-4'
@@ -75,8 +76,13 @@ var _scroll = function( direction ){
 	}
 }
 
+var _execute = function( id ){
+	var data = $('#' + id ).data();
+	ipc.send('execute', data.exec, $('#search').val());
+}
+
 $(function(){
-	console.log('ready');
+
 	$('#search').keypress(function( evt ){
 		// Little delay for value setup
 		// TODO => Filter non-letter keypresses (ctrl, alt...)
@@ -113,10 +119,6 @@ $(function(){
 		$('#list').attr('hidden', false);
 	}
 
-	ipc.on('dirty', function( event, bool ){
-		//$('body').css('overflow', (bool?'auto':'hidden'));
-	})
-
 	ipc.on('resultsForView', function( event, list ) {
 		selected = 0;
 		$('[id^="li-"').remove();
@@ -131,13 +133,16 @@ $(function(){
 				el.data('exec', item);
 				$('#list').append( el );
 				ipc.send('requestSize', $('[id^=li-').length, $(('#li-' + idx)).height() );
-			})	
+			})
+			$('.list-group-item').on('click', function(){
+				_execute( this.id );
+			})
 		}else{
 			ipc.send('requestSize', 0 );
 			$('#list').attr('hidden', true);
 		}
 	})
-	var appent =0;
+
 	ipc.on('appendToView', function( event, list ) {
 		setTimeout(function() {
 			if( list.length ){
@@ -154,22 +159,24 @@ $(function(){
 			}
 		}, 10);
 	})
+
 	ipc.on('halt', function(){
 		$('#search').val('');
 		$('[id^="li-"').remove();
 		ipc.send('requestSize', 0, 0 );
 		$('#list').attr('hidden', true);
 	})
+
 	ipc.send('mainReady');
+
 }).keydown(function( event ){
 	if( event.which === 38 || event.which === 40){
 		event.preventDefault();
 		// Up/Down
 		_scroll( event.which === 38?'UP':'DOWN' );
 	}else if( event.which === 13 ){
+		// Enter
 		event.preventDefault();
-		var data = $('#li-' + selected).data();
-		ipc.send('execute', data.exec, $('#search').val());
-		console.log($('#li-' + selected).data());
+		_execute( 'li-' + selected );
 	}
 })

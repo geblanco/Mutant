@@ -48,6 +48,13 @@
 		"iconPath": "../icons/github.png",
 		"internal": true
 	},
+	"bitbucketSearch": {
+		"appName": "BitBucket Search",
+		"subText": "Search any project on BitBucket",
+		"appCmd": "bitbucketSearch",
+		"iconPath": "../icons/bitbucket.png",
+		"internal": true
+	},
 	"wikiSearch": {
 		"appName": "Wikipedia Search",
 		"subText": "Search on Wikipedia",

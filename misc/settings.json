@@ -3,6 +3,9 @@
 	"theme": "Menda-Circle",
 	"db_port": 42511,
 	"shortcuts": {
-		"launch": "Ctrl+Space"
+		"launch": {
+			"cmd": "Ctrl+Space",
+			"application": false
+		}
 	}
 }
