@@ -49,7 +49,10 @@ var _launchPreferences = function(){
         console.log('[PREFERENCE APP] save app shortcut', shortcut);
         var app = Object.keys(shortcut)[0]
         global.settings.set('shortcuts.' + app, { cmd: shortcut[app], application: true });
-        router.send('newAppShortcut', app);
+        // Timeout for setup
+        setTimeout(function(){
+            router.send('newAppShortcut', app);
+        }, 20);
         console.log(global.settings.get('shortcuts'))
     }
 
@@ -77,4 +80,4 @@ module.exports = {
         "internal": true
     },
     regex: [ /preference/i ]
-} 
+}

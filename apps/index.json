@@ -6,5 +6,6 @@
 	"githubSearch"	: "./githubSearchApp",
 	"wikiSearch"	: "./wikiSearchApp",
 	"quitApp"		: "./quitApp",
-	"refreshApp"	: "./refreshApp"
+	"refreshApp"	: "./refreshApp",
+	"bitbucketSearch": "./bitbucketSearchApp"
 }

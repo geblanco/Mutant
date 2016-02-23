@@ -108,7 +108,7 @@ var _main = function( callback ) {
         width: 600,
         height: 75,
         center: true,
-        resizable: false,
+        resizable: true,
         darkTheme: true,
         frame: false,
         show: false,

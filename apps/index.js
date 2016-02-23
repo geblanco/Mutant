@@ -9,6 +9,10 @@ var _appIndex = require('./index.json');
 var _internalApps = {};
 // Regex for each application
 var REGEX = [];
+// Apps namespace
+global.app = {
+	utils: require('./appUtils')
+}
 
 // Util
 var _strSearch = function( str, query ){
@@ -28,9 +32,24 @@ var _searchApp = function( query ){
 	if( !REGEX.length ){
 		_loadApplications();
 	}
+	// For each application, 
+	// 	search by name,
+	//  search by regex
+	// As name regex almost always mathces
+	// Google dont get append,
+	// better approach, let each app match or not
+	// or, at least return its own name regex, 
+	// based on if it needs text append or is just a launchable
+	// Currently: As an app may process input text or not, meaning
+	// that it may accept input text, let it decide with its own regex
+	// by now may not be very useful, in the future may serve for flags
 	REGEX.forEach(function( Q, idx ){
-		var reg = ('/' + query + '/i');
+		// search by name
+		var reg = ('/^' + query + '/i');
 		if( _strSearch( Q.REG2, query ) !== -1 || Q.REG.test( query ) ){
+			matches.push( _internalApps[ Q.APP ].wrapper );
+		}
+		if( _internalApps[ Q.APP ].testQuery && _internalApps[ Q.APP ].testQuery( query ) ){
 			matches.push( _internalApps[ Q.APP ].wrapper );
 		}
 	})
@@ -56,7 +75,7 @@ var _loadApplication = function( mod ){
 		// Load each module
 		var _app = require( _appIndex[ mod ]);
 		if( _app.regex ){
-			console.log('[DEBUG]', _app);
+ 			console.log('[DEBUG]', _app);
 			// Construct the parseable object for later search
 			REGEX.push({
 				REG: _app.regex[ 0 ],
