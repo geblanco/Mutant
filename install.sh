@@ -230,14 +230,15 @@ echo "= starting setup"
 cd install
 	./gtkcc.sh listApps
 	# By now, just setup for Ubuntu theme
-	echo "{\
-		\"version\": \"0.1.0\",\
-		\"theme\": \"Humanity\",\
-		\"db_port\": 42511,\
-		\"shortcuts\": {\
-			\"launch\": \"Ctrl+Space\"\
-		}\
-	}" > ../misc/settings.json
+	printf \
+"{\
+	\n\"version\": \"0.1.0\",\
+	\n\"theme\": \"Humanity\",\
+	\n\"db_port\": 42511,\
+	\n\"shortcuts\": {\
+		\n\"launch\": \"Ctrl+Space\"\
+	\n}\
+\n}" > ../misc/settings.json
 cd ..
 
 # Make the launcher

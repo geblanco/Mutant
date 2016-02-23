@@ -13,6 +13,8 @@ var globalShortcut= electron.globalShortcut;
 var screen        = null;
 var scripts       = null;
 var ready         = null;
+var router        = null;
+var Router        = require('ElectronRouter');
 var bindings      = require( global.upath.join(__dirname, '/bridge/bindings') );
 // ********************************************
 
@@ -73,15 +75,19 @@ var _handleShortcut = function( evt ){
 }
 
 var _handleNewShortcut = function( shortcut ){
+    console.log('_handleNewShortcut', shortcut);
     var scut = Object.keys(shortcut)[0];
     var currScuts = global.settings.get('shortcuts');
     if( currScuts.hasOwnProperty( scut ) ){
         console.log('[MAIN]', '_handleNewShortcut', scut, 'Shortcut', shortcut[scut]);
-        globalShortcut.unregister( global.settings.get('shortcuts')[scut] );
+        console.log('[MAIN]', '_handleNewShortcut', 'unregister', currScuts[scut]);
+        console.log('[MAIN]', '_handleNewShortcut', 'register', shortcut[scut]);
+        console.log('[MAIN]', '_handleNewShortcut', 'set', shortcut[scut]);
+        globalShortcut.unregister( currScuts[scut].cmd );
         globalShortcut.register( shortcut[scut], function(){
-            _handleShortcut('TOGGLE');
+           _handleShortcut('TOGGLE');
         });
-        global.settings.set(('shortcuts' + '.' + scut), shortcut[scut]);
+        global.settings.set(('shortcuts' + '.' + scut + '.cmd'), shortcut[scut]);
     }else{
         console.log('[MAIN]', '_handleNewShortcut', 'ENOENT Shortcut');
     }
@@ -94,7 +100,7 @@ var _ready = function(){
 var _main = function( callback ) {
     //var theme = require( global.upath.join(__dirname, 'misc', 'setup.json'));
     // General Setup
-    var launchShortcut = global.settings.get('shortcuts')['launch'];
+    var launchShortcut = global.settings.get('shortcuts')['launch'].cmd;
     screen = electron.screen;
     console.log('[MAIN] Create window');
     // Create the browser window.
@@ -109,6 +115,8 @@ var _main = function( callback ) {
         title: "The Mutant"
     });
 
+    router = new Router('MAIN', mainWindow);
+
     // Load the main window.
     console.log('[MAIN] Load index');
     mainWindow.loadURL('file://' + global.upath.join( __dirname, '/front/html/index.html' ) );
@@ -117,29 +125,25 @@ var _main = function( callback ) {
     // Pass a function to the bridge so that it can call it when it needs anything,
     // by now just hide and quit
     console.log('[MAIN] Setup Bindings');
-    bindings.setup( mainWindow, screen.getDisplayNearestPoint( screen.getCursorScreenPoint() ), function( evt, arg ){
-        switch( evt ){
-            case 'newShortcut':
-                console.log('[MAIN] New Shortcut evt');
-                _handleNewShortcut( arg );
-                break;
-            case 'hide':
-                // Shortcut for inside window close 
-                // (used by exec, upon exec call hide window)
-                console.log('[MAIN] Hide evt');
-                _handleShortcut('OFF');
-                break;
-            case 'quit':
-                console.log('[MAIN] Quit evt');
-                mainWindow.removeListener('closed', callback);
-                process.removeListener('SIGINT', callback);
-                callback();
-                break;
-            default: break;
-        }
-    });
-    // mainWindow.openDevTools();
-
+    
+    router.on('shortcutChange', function( arg ){
+        console.log('[MAIN] New Shortcut evt');
+        _handleNewShortcut( arg );
+    })
+    router.on('hide', function(){
+        console.log('[MAIN] Hide evt');
+        _handleShortcut('OFF');
+    })
+    router.on('quit', function(){
+        console.log('[MAIN] Quit evt');
+        ipc.removeAllListeners();
+        mainWindow.removeListener('closed', callback);
+        process.removeListener('SIGINT', callback);
+        callback();
+    })
+    
+    bindings.setup( mainWindow, screen.getDisplayNearestPoint(screen.getCursorScreenPoint()) );
+    
     // Register evts and shortcuts
     mainWindow.on('blur', _handleShortcut);
     // Register shortcut
@@ -179,6 +183,8 @@ var _main = function( callback ) {
         console.log('[MAIN] Window ready');
         _handleShortcut('TOGGLE');
     })
+
+    //mainWindow.openDevTools();
 }
 
 // Quit when all windows are closed.
@@ -190,7 +196,16 @@ global.async.waterfall([
     function( callback ){
         if( Object.keys(global.settings.get()).length === 0 ){
             // First launch
+            // default shortcuts
             var localSettings = require( global.upath.join(__dirname, 'misc', 'settings.json') );
+            // default apps shortcuts
+            var appsShortcuts = require( global.upath.join(__dirname, 'misc', '_in_apps.json') );
+            Object.keys( appsShortcuts ).forEach(function( key ){
+                localSettings.shortcuts[key] = {
+                    cmd: appsShortcuts[key].shortcut || '_unset_',
+                    application: true
+                };
+            })
             // General Setup
             global.settings.set({
                 theme: localSettings.theme,
@@ -211,7 +226,8 @@ global.async.waterfall([
                 // Cache files on startup so file is catchable
                 console.log('[MAIN] Cache files');
                 scripts = require(global.upath.join(__dirname, './back', 'scripts'));
-                scripts.cacheFiles( global.settings.get('theme'), function( err, result ){
+                var util = require(global.upath.join(__dirname, './back', 'utils'));
+                util.cacheFiles( global.settings.get('theme'), function( err, result ){
                     if( err ) console.log(err);
                     callback( null );
                 });

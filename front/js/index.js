@@ -3,22 +3,13 @@
 var $ = require('jquery');
 var ipc = require('electron').ipcRenderer;
 var prevQ = '', selected = 0;
-var _defaultIconPath = '../icons/application-x-executable.png';
+var _defaultIconPath = '../icons/application.png';
+var MAX_CHAR = 100;
 
 var _constructItem = function( selected, id, item ){
 	// Item should have name and sub text, optionally an icon too
 	// If no icon is provided, fall back to default
 	// Add on click too
-	/*return $('<div/>', {
-		"class": 'list-group-item ' + (selected?'active':''),
-		"id": id
-	}).append($('<h4/>', {
-		"class": 'list-group-item-heading',
-		"text": item.name
-	})).append($('<p/>', {
-		"class": 'list-group-item-text',
-		"text": item.subText
-	}))*/
 	var path = item.iconPath.split('/');
 	//console.log(path);
 	path = path.length < 2 ? _defaultIconPath : item.iconPath;
@@ -26,7 +17,8 @@ var _constructItem = function( selected, id, item ){
 	return (
 		$('<div/>', {
 			"class": 'list-group-item row ' + (selected?'active':''),
-			"id": id
+			"id": id,
+			"css":{ cursor: 'pointer' }
 		}).append(
 			$('<div/>', {
 				"class": 'icon col-xs-3 col-md-4'
@@ -48,12 +40,12 @@ var _constructItem = function( selected, id, item ){
 			}).append(
 				$('<h4/>', {
 					"class": 'list-group-item-heading',
-					"text": item.appName.length < 80? item.appName : item.appName.substring(0, 80) + '...'
+					"text": item.appName.length < MAX_CHAR? item.appName : item.appName.substring(0, MAX_CHAR) + '...'
 				})
 			).append(
 				$('<p/>', {
 					"class": 'list-group-item-text',
-					"text": item.subText === '__unknown__' ? '' : item.subText.length < 80? item.subText : item.subText.substring(0, 80) + '...',
+					"text": item.subText === '__unknown__' ? '' : item.subText.length < MAX_CHAR? item.subText : item.subText.substring(0, MAX_CHAR) + '...',
 				})
 			)
 		)
@@ -84,8 +76,13 @@ var _scroll = function( direction ){
 	}
 }
 
+var _execute = function( id ){
+	var data = $('#' + id ).data();
+	ipc.send('execute', data.exec, $('#search').val());
+}
+
 $(function(){
-	console.log('ready');
+
 	$('#search').keypress(function( evt ){
 		// Little delay for value setup
 		// TODO => Filter non-letter keypresses (ctrl, alt...)
@@ -122,10 +119,6 @@ $(function(){
 		$('#list').attr('hidden', false);
 	}
 
-	ipc.on('dirty', function( event, bool ){
-		//$('body').css('overflow', (bool?'auto':'hidden'));
-	})
-
 	ipc.on('resultsForView', function( event, list ) {
 		selected = 0;
 		$('[id^="li-"').remove();
@@ -140,13 +133,16 @@ $(function(){
 				el.data('exec', item);
 				$('#list').append( el );
 				ipc.send('requestSize', $('[id^=li-').length, $(('#li-' + idx)).height() );
-			})	
+			})
+			$('.list-group-item').on('click', function(){
+				_execute( this.id );
+			})
 		}else{
 			ipc.send('requestSize', 0 );
 			$('#list').attr('hidden', true);
 		}
 	})
-	var appent =0;
+
 	ipc.on('appendToView', function( event, list ) {
 		setTimeout(function() {
 			if( list.length ){
@@ -163,22 +159,24 @@ $(function(){
 			}
 		}, 10);
 	})
+
 	ipc.on('halt', function(){
 		$('#search').val('');
 		$('[id^="li-"').remove();
 		ipc.send('requestSize', 0, 0 );
 		$('#list').attr('hidden', true);
 	})
+
 	ipc.send('mainReady');
+
 }).keydown(function( event ){
 	if( event.which === 38 || event.which === 40){
 		event.preventDefault();
 		// Up/Down
 		_scroll( event.which === 38?'UP':'DOWN' );
 	}else if( event.which === 13 ){
+		// Enter
 		event.preventDefault();
-		var data = $('#li-' + selected).data();
-		ipc.send('execute', data.exec, $('#search').val());
-		console.log($('#li-' + selected).data());
+		_execute( 'li-' + selected );
 	}
 })

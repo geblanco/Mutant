@@ -14,15 +14,16 @@
   },
   "main": "main.js",
   "dependencies": {
-    "electron-settings": "^0.1.1",
     "async": "*",
+    "electron-settings": "^0.1.1",
     "jquery": "2.1.4",
     "librsvg": "*",
     "lodash": "*",
     "mkdirp": "*",
     "sqlite3": "*",
     "upath": "*",
-    "vertigo": "https://github.com/m0n0l0c0/vertigo"
+    "vertigo": "https://github.com/Inevio/vertigo.git",
+    "ElectronRouter": "https://github.com/m0n0l0c0/ElectronRouter.git"
   },
   "devDependencies": {
     "electron-packager": "^5.1.0"

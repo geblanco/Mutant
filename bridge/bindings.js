@@ -8,20 +8,22 @@ var maxElements = null;
 var baseHeight = null;
 var ipc = require('electron').ipcMain;
 var scripts = require( global.upath.join(__dirname, '/../back/scripts') );
-var parentComm = function(){};
+var router = (function(){ var r = require('ElectronRouter'); return new r(); })()
 
 var _requestSize = function( event, noElems, size ){
 
 	var dim = window.getContentSize();
 	size = size || baseHeight;
-	
+
+	//console.log('[BRIDGE] Size change requested', noElems, size, baseHeight);
+
 	function _calculateMaxElements( size ){
 		var i = 0;
 		for(; i*size < maxHeight; i++);
 		maxElements = i-2;
 		console.log('[BRIDGE] Calculation', size, maxHeight, i);
 	}
-	//console.log('Requested size change', noElems, size);
+	//console.log('[BRIDGE] Requested size change', noElems, size);
 	if( maxElements === null ){
 		_calculateMaxElements(size);
 	}
@@ -55,7 +57,7 @@ ipc.on('query', function( event, query ){
 
 ipc.on('execute', function( event, exec, query ){
 	console.log('[BRIDGE] Called exec', exec);
-	parentComm('hide');
+	router.send('hide');
 	scripts.processAndLaunch( exec, query );
 });
 
@@ -67,9 +69,6 @@ module.exports.setup = function( w, displ, fn ){
 	display = displ;
 	maxHeight = display.bounds.height/2 - 30;
 	baseHeight = window.getContentSize()[1];
-	parentComm = fn || parentComm;
-	scripts.setQuitCallback( function(){ parentComm( 'quit') } );
-	scripts.setNewSCutCallback( function( newShortcut ){ parentComm( 'newShortcut', newShortcut ) } );
 }
 module.exports.setDisplay = function( displ ){
 	display = displ;
