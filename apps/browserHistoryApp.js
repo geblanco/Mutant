@@ -8,7 +8,7 @@ var _browserLaunch = function( exec, query ){
 	var reg = /((http|ftp|https)\:\/\/)(www\.)?|(www\.)([^\.]*)/i;
 	if( !reg.test( query ) ){
 		// Lack starting www....
-		query = 'www.' + query;
+		query = 'http://' + query;
 	}
 
 	_spawner( 'xdg-open', [query] );

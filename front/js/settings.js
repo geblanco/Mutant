@@ -136,9 +136,9 @@ var _saveShortcut = function( id, type ){
 		ipc.send('shortcutChangeApplication', aux);
 		_toggleStateText( _currBtn );
 	}else{
+		aux[ data.command ] = _shortcut.join('+');
 		console.log('Saving normal shortcut', aux);
 		ipc.send('shortcutChange', aux);
-		aux[ data.command ] = _shortcut.join('+');
 	}
 }
 
@@ -152,7 +152,7 @@ $(function(){
 	    	text: 'Cancel',
 	    	class: 'btn btn-danger',
 	    	id: 'cancel-rec-btn',
-	    	click: function(){ _shortcut = []; _exitRecMode(); }
+	    	click: function(){ _shortcut = []; _exitRecMode( _state === REC_TEXT ); }
 	    })
 	)
 	$('#cancel-rec-btn').hide();
