@@ -9,7 +9,6 @@ var _launchPreferences = function(){
 	console.log('[PREFERENCE APP] launchPreferences');
 
     var apps = JSON.stringify(_prepare( global.settings.get('shortcuts') ));
-	console.log('app', apps.length);
 	var settingsWindow = new BrowserWindow({
         width: 600,
         height: (10 * apps.length),

@@ -59,8 +59,10 @@ var _searchApp = function( query ){
 
 router.on('newAppShortcut', function( app ){
 
-	console.log('[LOADER] Reloading application "' + app + '"');
+	console.log('[LOADER] Reloading application "' + app + '"', global.settings.get('shortcuts'));
 	if( _appIndex.hasOwnProperty( app ) ){
+		// Invalidate cache to ensure it's required again
+		require.cache[_appIndex[ app ]] = undefined;
 		_loadApplication( app );
 	}else{
 		console.log('[LOADER] Unknown application "' + app + '"');
@@ -75,7 +77,7 @@ var _loadApplication = function( mod ){
 		// Load each module
 		var _app = require( _appIndex[ mod ]);
 		if( _app.regex ){
- 			console.log('[DEBUG]', _app);
+ 			// console.log('[DEBUG]', _app);
 			// Construct the parseable object for later search
 			REGEX.push({
 				REG: _app.regex[ 0 ],
