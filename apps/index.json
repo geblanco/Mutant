@@ -1,12 +1,9 @@
 {
-	"preference"	: "./preferenceApp",
-	"netGo"			: "./netGoApp",
-	"netSearch"		: "./netSearchApp",
-	"browserHistory": "./browserHistoryApp",
-	"githubSearch"	: "./githubSearchApp",
-	"bitbucketSearch": "./bitbucketSearchApp",
-	"wikiSearch"	: "./wikiSearchApp",
-	"quitApp"		: "./quitApp",
-	"refreshApp"	: "./refreshApp",
-	"youtubeSearch"	: "./youtubeSearchApp"
+    "preference": "./preferenceApp",
+    "netGo": "./netGoApp",
+    "netSearch": "./netSearchApp",
+    "browserHistory": "./browserHistoryApp",
+    "quit": "./quitApp",
+    "refresh": "./refreshApp",
+    "webSearch": "./webSearchApp/webSearchApp"
 }

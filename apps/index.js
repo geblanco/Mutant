@@ -4,7 +4,6 @@ var _spawner = require(global.upath.join(__dirname, '/../', 'back/utils')).spawn
 var router   = (function(){ var r = require('ElectronRouter'); return new r(); })();
 // Apps index
 var _appIndex = require('./index.json');
-//var _specialApps = ['quit', 'preference', 'refresh'];
 // Real applications
 var _internalApps = {};
 // Regex for each application
@@ -14,7 +13,7 @@ global.app = {
 	utils: require('./appUtils')
 }
 
-// Util
+// *************** Util ***************
 var _strSearch = function( str, query ){
 	
 	if( typeof str !== 'string' || typeof query !== 'string' ){
@@ -57,55 +56,6 @@ var _searchApp = function( query ){
 
 }
 
-router.on('newAppShortcut', function( app ){
-
-	console.log('[LOADER] Reloading application "' + app + '"', global.settings.get('shortcuts'));
-	if( _appIndex.hasOwnProperty( app ) ){
-		// Invalidate cache to ensure it's required again
-		require.cache[_appIndex[ app ]] = undefined;
-		_loadApplication( app );
-	}else{
-		console.log('[LOADER] Unknown application "' + app + '"');
-	}
-
-});
-
-var _loadApplication = function( mod ){
-
-	console.log('[LOADER] Loading application "' + mod + '"');
-	try{
-		// Load each module
-		var _app = require( _appIndex[ mod ]);
-		if( _app.regex ){
- 			// console.log('[DEBUG]', _app);
-			// Construct the parseable object for later search
-			REGEX.push({
-				REG: _app.regex[ 0 ],
-				REG2: _app.regex[ 1 ] || mod,
-				APP: mod
-			});
-		}
-		_internalApps[ mod ] = _app;
-	}catch(e){
-		console.log('[LOADER] ERROR Failed loading application', mod, e);
-	}
-}
-
-var _loadApplications = function(){
-
-	// Reload index
-	var _appIndex = require('./index.json');
-
-	// Load applications
-	for( var mod in _appIndex ){
-		_loadApplication( mod );
-	}
-
-	//global.settings.on('change', handleChange);
-	//global.settings.on('save', handleChange);
-	//console.log('Registered to settings changes');
-}
-
 // Wrapper for deep copy, returns a new allocated object
 // avoiding overwrittings, call exceptionally
 var _getInternalApp = function( app ){
@@ -120,11 +70,116 @@ var _getInternalApp = function( app ){
 	
 }
 
-var _launchApp = function( cmd, exec, query ){
+var _reloadApplication = function( app ){
 	
-	_internalApps[ cmd ].fn( exec, query );	
+	console.log('[LOADER] Reloading application "' + app + '"', global.settings.get('shortcuts'), _appIndex);
+
+	// Reload index, just in case...
+	// require.cache['./index.json'] = undefined;
+	_appIndex = require('./index.json');
+
+	if( _appIndex.hasOwnProperty( app ) ){
+		// Invalidate cache to ensure it's required again
+		require.cache[_appIndex[ app ]] = undefined;
+		_loadApplication( app );
+	}else{
+		console.log('[LOADER] Unknown application "' + app + '"');
+	}
 
 }
+// ************************************
+// *************** Main ***************
+// API: 
+// Every application must expose at least
+// a getWrapper returning the wrapper and
+// function to call upon execution
+// Additionally, it can expose:
+// 	- shouldReload: Called before everything else, if it returns true, we follow default behaviour
+// 					preLoad - getRegex - getWrapper - postLoad, else, we skip this and just get the Wrapper
+// 	- preLoad [ async, receive a callback ]: Called before assignments, useful for initialization (DB...)
+// 	- getRegex: Called to get the Regex used to match against queries
+// 	- postLoad [ async, receive a callback ]: Called after assignment, variables setup, reload?
+// 	- testQuery: Called on matching, lets the app choose whether to match or not given query
+var _loadApplication = function( mod ){
+
+	console.log('[LOADER] Loading application "' + mod + '"', _appIndex[ mod ]);
+	try{
+		// Load each module
+		var _app = require( _appIndex[ mod ]);
+
+		global.async.waterfall([
+
+			function( callback ){
+				if( _app.shouldReload && _app.shouldReload() ){
+					if( _app.preLoad ){
+						return _app.preLoad( callback );
+					}
+				}
+				callback( null );
+			},
+			function( callback ){
+
+				var wrapper = _app.getWrapper();
+				if( wrapper.regex ){
+
+					// Construct the parseable object for later search
+					REGEX.push({
+						REG: wrapper.regex[ 0 ],
+						REG2: wrapper.regex[ 1 ] || mod,
+						APP: mod
+					});
+
+				}
+				_internalApps[ mod ] = wrapper;
+				callback( null );
+			},
+			function( callback ){
+				if( _app.shouldReload && _app.shouldReload() ){
+					if( _app.postLoad ){
+						return _app.postLoad( callback );
+					}	
+				}
+				callback( null );
+			}
+			
+		], function( err ){
+			if( err ){
+				console.log('[LOADER] ERROR Loading application "' + mod + '"', err);
+			}
+		})
+		
+	}catch(e){
+		console.log('[LOADER] ERROR Failed loading application "' + mod + '"', e);
+	}
+
+}
+
+var _loadApplications = function(){
+
+	// Reload index
+	var _appIndex = require('./index.json');
+
+	// Load applications
+	for( var mod in _appIndex ){
+		_loadApplication( mod );
+	}
+	
+}
+
+var _launchApp = function( cmd, exec, query ){
+	
+	if( _internalApps[ cmd ] !== undefined ){
+		_internalApps[ cmd ].fn( exec, query );	
+	}else{
+		console.log('[LOADER] LaunchApp unknown application "' + cmd + '"');
+	}
+
+}
+// ************************************
+// ************* Interface ************
+router.on('newAppShortcut', _reloadApplication);
+router.on('reloadApplication', _reloadApplication);
+// ************************************
 
 module.exports = {
 	  searchApp 		: _searchApp

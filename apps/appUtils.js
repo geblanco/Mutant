@@ -15,9 +15,9 @@ var _cleanQuery = function( regexArr, query ){
 		
 		});
 
-		if( ret ){
+		if( ret && ret[1] !== undefined ){
 			
-			ret = query.replace( ret[0], '' );
+			ret = ret[1].trim();
 		
 		}
 	}

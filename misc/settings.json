@@ -1,7 +1,7 @@
 {
 	"version": "0.1.0",
 	"theme": "Menda-Circle",
-	"db_port": 42511,
+	"db_name": "mutant.sqlite3",
 	"shortcuts": {
 		"launch": {
 			"cmd": "Ctrl+Space",

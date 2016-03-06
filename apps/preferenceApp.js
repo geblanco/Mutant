@@ -48,16 +48,26 @@ var _launchPreferences = function(){
         console.log('[PREFERENCE APP] save app shortcut', shortcut);
         var app = Object.keys(shortcut)[0]
         global.settings.set('shortcuts.' + app, { cmd: shortcut[app], application: true });
-        // Timeout for setup
-        setTimeout(function(){
-            router.send('newAppShortcut', app);
-        }, 20);
+        router.send('newAppShortcut', app);
         console.log(global.settings.get('shortcuts'))
+    }
+
+    function _saveNewApp( evt, data ){
+        console.log('[PREFERENCE APP] save new App', data);
+        router.route('registerWebApp', 'POST', data, function( err, result ){
+            console.log('[PREFERENCE APP] _saveNewApp post arguments', arguments);
+            if( err ){
+                settingsWindow.send('saveError', err);
+            }else{
+                settingsWindow.send('saveApp', 'OK');
+            }
+        })
     }
 
     ipc.on('prefsReady', _send);
     ipc.on('shortcutChange', _sendToBack );
     ipc.on('shortcutChangeApplication', _saveAppShortcut);
+    ipc.on('createWebApp', _saveNewApp);
 
 	settingsWindow.on('close', function( evt ){
 		// nullify
@@ -69,7 +79,7 @@ var _launchPreferences = function(){
 
 }
 
-module.exports = {
+var exp = {
     fn: _launchPreferences,
     wrapper: {
         "appName": "Preferences",
@@ -77,6 +87,15 @@ module.exports = {
         "appCmd": "preference",
         "iconPath": "../icons/setting.png",
         "internal": true
-    },
+    }, 
     regex: [ /preference/i ]
+}
+
+module.exports = {
+    getRegex: function(){
+        return exp.regex;
+    },
+    getWrapper: function(){
+        return exp;
+    }
 }

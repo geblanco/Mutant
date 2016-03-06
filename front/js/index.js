@@ -7,13 +7,13 @@ var _defaultIconPath = '../icons/application.png';
 var MAX_CHAR = 100;
 
 var _constructItem = function( selected, id, item ){
+						
 	// Item should have name and sub text, optionally an icon too
 	// If no icon is provided, fall back to default
 	// Add on click too
-	var path = item.iconPath.split('/');
-	//console.log(path);
+	var path = item.iconPath.split('/');;
 	path = path.length < 2 ? _defaultIconPath : item.iconPath;
-
+	
 	return (
 		$('<div/>', {
 			"class": 'list-group-item row ' + (selected?'active':''),

@@ -15,7 +15,7 @@ var _browserLaunch = function( exec, query ){
 
 }
 
-module.exports = {
+var exp = {
 	fn: _browserLaunch,
 	wrapper: {
 		"appName": "",
@@ -24,4 +24,13 @@ module.exports = {
 		"iconPath": "../icons/link.png",
 		"internal": true
 	}
+}
+
+module.exports = {
+    getRegex: function(){
+        return exp.regex || null;
+    },
+    getWrapper: function(){
+        return exp;
+    }
 }

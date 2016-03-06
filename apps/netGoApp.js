@@ -14,7 +14,7 @@ var _netGo = function( exec, query ){
 
 }
 
-module.exports = {
+var exp = {
 	fn: _netGo,
 	wrapper: {
 		"appName": "Open Url",
@@ -22,8 +22,17 @@ module.exports = {
 		"appCmd": "netGo",
 		"iconPath": "../icons/openurl.png",
 		"internal": true
-	},
+	}, 
 	regex: [
 		/(?:(?:http|ftp|https)\:\/\/(?:www\.))([^\.]*)(?:\.com|\.es)?|(?:(?:http|ftp|https)\:\/\/(?:www\.))?([^\.]*)(?:\.)/i
 	]
+}
+
+module.exports = {
+	getRegex: function(){
+		return exp.regex;
+	},
+	getWrapper: function(){
+		return exp;
+	}
 }

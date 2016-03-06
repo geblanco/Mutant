@@ -1,57 +1,60 @@
 'use strict';
 
-var vertigo = require('vertigo');
 var sqlite 	= require('sqlite3').verbose();
 var async 	= require('async');
 var upath 	= require('upath');
-var server 	= vertigo.createServer( 8000 );
+var _ 		= require('lodash');
 var dbs		= [];
 
-var _query = function( db, query, callback ){
+var _query = function( query, callback ){
 
-	db.DB.all(db.query, query, function( err, rows ){
-		var results = [];
-		if( err ) callback( err );
-		else{
-			//console.log('[DB QUERY]', db.query, query, rows);
-			if( rows ){
-				if( rows instanceof Array ){
-					rows.forEach(function( row ){
-						row.browser = db.name;
-						results.push( row );
-					});
-				}else{
-					rows.browser = db.name;
-					results.push( rows );
+	async.map( dbs, function( db, callback ){
+
+		db.DB.all(db.query, query, function( err, rows ){
+			var results = [];
+			if( err ) callback( err );
+			else{
+				if( rows ){
+					//console.log('[DB QUERY]', query, rows);
+					
+					if( rows instanceof Array ){
+						rows.forEach(function( row ){
+							row.browser = db.name;
+							results.push( row );
+						});
+					}else{
+						rows.browser = db.name;
+						results.push( rows );
+					}
 				}
+				// Wrap
+				callback(null, results);
 			}
-			// Wrap
-			callback(null, JSON.stringify(results));
+		})
+		
+	}, function( err, result ){
+
+		if( err ){
+			return callback( err );
 		}
+
+		callback( null, JSON.stringify( _.flatten(result) ) );
+
 	})
-	
+
 }
-var _quit = function( callback ){
+var _quit = function(){
 	console.log('[DB PROC] close...');
 	dbs.forEach(function( db ){
-		db.server = null;
 		try{ db.DB.close(); }catch(e){}
 	})
-	callback();
+	process.exit(0);
 }
 
 function Database( obj ){
 	this.name 	= obj.name 	|| '';
 	this.dir 	= obj.dir 	|| '';
 	this.query 	= obj.query || '';
-	this.port 	= obj.port;
-	this.server = null;
-	if( obj.dir && obj.query && obj.port ){
-		try{
-			console.log('[DB PROC] createServer', this.port);
-			this.server = vertigo.createServer( this.port, '127.0.0.1' );
-		}catch(e){ console.log('[DB PROC] Could not create server'); this.server = null; }
-	}
 }
 
 Database.prototype.init = function( callback ) {
@@ -60,43 +63,56 @@ Database.prototype.init = function( callback ) {
 		if( err ){
 			that.DB = null;
 			callback('UNABLE TO OPEN');
-		}else if( that.server ){
-			console.log('[DB PROC] Registering on server', that.name, 'port', that.port);
-			// that.server.on('init', _init);
-			that.server.on('query', function( query, callback ){ _query( that, query, callback ) });
-			that.server.on('quit', _quit);
-			callback( null );
 		}else{
-			that.DB.close(function(){
-				callback( 'BAD SERVER' );
-			})
+			console.log('[DB PROC] Registered on Database', that.name);
+			callback( null );
 		}
 	}) 
 };
 
 process.on('message', function( msg ){
-	if( msg === 'SIGHUP' ){
+	
+	if( msg === 'SIGHUP' || msg === 'quit' ){
+	
 		console.log('[DB PROC] Received SIGHUP, quit')
-		_quit(function(){
-			process.exit(0);
+		_quit();
+	
+	}else if( msg.hasOwnProperty( 'query' ) ){
+	
+		_query( msg.query, function( err, res ){
+
+			if( !err ) process.send({ results: res });
+			else console.log('[DB PROC] QUERY ERR', err);
+
 		})
+	
 	}
+
 });
 
 // ENTRY POINT
 // Databases come from process arguments
 var args = Array.prototype.slice.call( process.argv, 2 );
 async.forEachOf( args, function( db, idx, callback ){
+	
 	// Unwrap
 	var a = JSON.parse(db);
 	var aux = new Database( a );
 	aux.init(function( err ){
+	
 		if( !err ) dbs.push( aux );
+		else console.log('[DB PROC] INIT ERR', err);
 		callback( err );
+
 	})
+
 }, function( err ){
+	
 	if( !dbs.length ){
+	
 		console.log('[DB PROC] NO DATABASE PROVIDED', err);
-		process.exit(1000)
+		process.exit(1000);
+	
 	}
+
 });

@@ -6,11 +6,8 @@ var spawn 	= require('child_process').spawn;
 var fork	= require('child_process').fork;
 var app		= electron.app;
 var fs 		= require('fs');
-var vertigo = require('vertigo');
-var dbClient;
-var dbServer;
-var sqlite 	= require('sqlite3').verbose();
-
+var dbServer= null;
+var returnCb= function(){};
 // Variables
 var dbs = [{
 	name	: 'chrome',
@@ -19,10 +16,10 @@ var dbs = [{
 },{
 	name	: 'firefox',
 	dir		: '',
-	query	: 'SELECT url, title FROM moz_places WHERE title LIKE ? LIMIT 20',
+	query	: 'SELECT url, title FROM moz_places WHERE title LIKE ? ORDER BY last_visit_date DESC LIMIT 20',
 }];
 
-var _init = function( port, callback ){
+var _init = function( callback ){
 	global.async.waterfall([
 		// Search firefox db
 		function( callback ){
@@ -41,53 +38,38 @@ var _init = function( port, callback ){
 				}
 			})
 		},
-		// Negotiate port
-		function( dbs, callback ){
-			var tries = 10;
-			// TODO => Check EADDRINUSE
-			/*while((function(){
-				console.log('[DB MAIN] Negotiating ports...', port);
-				try{
-					if( tries-- ){
-						var s = vertigo.createServer( port, '127.0.0.1' );
-						console.log('[DB MAIN] createServer', s);
-						//var c = vertigo.createClient( port );
-						//c = null;
-						//s.close(function(){ console.log('server closed', arguments); });
-					}else{
-						port = null;
-					}
-					return false;
-				}catch(e){
-					console.log('failed');
-					port++;
-					return true;
-				}
-			})());
-			console.log('[DB MAIN] Negotiated', port);*/
-			if( port !== null ){
-				var ports = [];
-		    	dbs.forEach(function(db, idx){ db.port = port + idx; ports.push( port + idx ) });
-				callback( null, ports, dbs );
-			}else{
-				callback('[DB MAIN] UNABLE TO OPEN PORTS');
-			}
-		},
 		// Start and setup database process
-		function( ports, dbs, callback ){
+		function( dbs, callback ){
 			dbServer = fork( global.upath.join(__dirname, 'dbProcess.js'), dbs.map(function(db){ return JSON.stringify(db) }), {
 		    	//stdio: [ 'ignore', 'ignore', 'ignore' ],
 				cwd: process.cwd()
 		    });
-
+		    dbServer.on('message', _handle);
 		    dbServer.on('close', function (code) {
 				console.log('[DB MAIN] db process exited with code ' + code);
+				dbServer.removeListener('message', _handle);
+				dbServer = null;
 		    });
 		    console.log('[DB MAIN] Initializing', dbs);
-			dbClient = vertigo.createClient( ports );
 			callback( null );
 		}
 	], callback);
+}
+
+var _handle = function( msg ){
+	if( msg.hasOwnProperty( 'results' ) ){
+
+		if( msg.results ){
+
+			returnCb(null, JSON.parse(msg.results));
+
+		}else{
+			
+			returnCb('bad result');
+
+		}
+
+	}
 }
 
 var _query = function( query, callback ){
@@ -100,17 +82,10 @@ var _query = function( query, callback ){
 	if( !(query instanceof Array) ){
 		query = [query];
 	}
-	// It may not be ready yet
-	if( dbClient ){
-		// Make it array like
-		dbClient.request('query', query, function( err, results ){
-			//console.log('on db query', results);
-			if( results ){
-				callback(null, JSON.parse(results));
-			}else{
-				callback('bad result');
-			}
-		});
+	// It may not be ready yet or errored
+	if( dbServer ){
+		returnCb = callback;
+		dbServer.send({'query': query});
 	}else{
 		callback(null, []);
 	}
@@ -124,7 +99,6 @@ var _shutdown = function( callback ){
 	//	if( err ) console.log('[DB MAIN] err closing db', err);
 	//});
 	// Close this side and send signal
-	dbClient = null;
 	dbServer.send('SIGHUP');
 	callback();
 }

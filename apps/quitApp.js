@@ -7,13 +7,11 @@ var exp = {
 	wrapper: {
 		"appName": "Quit Mutant",
 		"subText": "Quit the App",
-		"appCmd": "quitApp",
+		"appCmd": "quit",
 		"iconPath": "../icons/quit.png",
 		"internal": true
 	}, 
-	regex: [
-		/QUIT/i, 'quit'
-	]
+	regex: [ /QUIT/i, 'quit' ]
 }
 
 if( global.settings.get('shortcuts.Quit') ){
@@ -25,4 +23,11 @@ if( global.settings.get('shortcuts.Quit') ){
 	
 }
 
-module.exports = exp;
+module.exports = {
+    getRegex: function(){
+        return exp.regex;
+    },
+    getWrapper: function(){
+        return exp;
+    }
+}

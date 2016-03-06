@@ -1,7 +1,7 @@
 'use strict';
 //Entry point, set custom object in global
 global.upath	= require('upath');
-global.async 	= require('async');
+global.async 	= require('./async');
 global.db       = require('./db/db');
 global.settings = (function(){ var s = require('electron-settings'); return new s() })();
 // ***************** Electron *****************
@@ -16,6 +16,7 @@ var ready         = null;
 var router        = null;
 var Router        = require('ElectronRouter');
 var bindings      = require( global.upath.join(__dirname, '/bridge/bindings') );
+var util          = require( global.upath.join(__dirname, './back', 'utils') );
 // ********************************************
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -187,6 +188,19 @@ var _main = function( callback ) {
     //mainWindow.openDevTools();
 }
 
+// Allow only one instance
+var shouldQuit = app.makeSingleInstance(function(){
+    // Someone tried to run a second instance, we should focus our window.
+    if( mainWindow ){
+       _handleShortcut('TOGGLE');
+    }
+});
+
+if( shouldQuit ){
+    app.quit();
+    return;
+}
+
 // Quit when all windows are closed.
 app.on('window-all-closed', app.quit);
 app.on('ready', _ready);
@@ -194,12 +208,12 @@ app.on('ready', _ready);
 global.async.waterfall([
     // Settings
     function( callback ){
+        let localSettings = require( global.upath.join(__dirname, 'misc', 'settings.json') );
         if( Object.keys(global.settings.get()).length === 0 ){
             // First launch
             // default shortcuts
-            var localSettings = require( global.upath.join(__dirname, 'misc', 'settings.json') );
             // default apps shortcuts
-            var appsShortcuts = require( global.upath.join(__dirname, 'misc', '_in_apps.json') );
+            let appsShortcuts = require( global.upath.join(__dirname, 'misc', '_in_apps.json') );
             Object.keys( appsShortcuts ).forEach(function( key ){
                 localSettings.shortcuts[key] = {
                     cmd: appsShortcuts[key].shortcut || '_unset_',
@@ -207,38 +221,51 @@ global.async.waterfall([
                 };
             })
             // General Setup
-            global.settings.set({
-                theme: localSettings.theme,
-                db_port: localSettings.db_port,
-                shortcuts: localSettings.shortcuts
-            });
+            global.settings.set('theme', localSettings.theme);
+            global.settings.set('shortcuts', localSettings.shortcuts);
             console.log('[MAIN] First launch settings', global.settings.get());
         }else{
             console.log('[MAIN] Not first time');
         }
-        callback();
+        callback( null, localSettings );
     },
     // DB and Apps
-    function( callback ){
+    function( local, callback ){
         global.async.parallel([
             // Init caching files
             function( callback ){
                 // Cache files on startup so file is catchable
                 console.log('[MAIN] Cache files');
                 scripts = require(global.upath.join(__dirname, './back', 'scripts'));
-                var util = require(global.upath.join(__dirname, './back', 'utils'));
                 util.cacheFiles( global.settings.get('theme'), function( err, result ){
                     if( err ) console.log(err);
                     callback( null );
                 });
             },
-            // Init db
+            // Init browser history db
             function( callback ){
-                console.log('[MAIN] Initialize DB', global.settings.get('db_port'));
-                global.db.init( global.settings.get('db_port'), function( err ){
+                console.log('[MAIN] Initialize DB');
+                global.db.init(function( err ){
                     if( err ) console.log(err);
                     callback( null );
                 });
+            },
+            function( callback ){
+
+                console.log('[MAIN] Create DB');
+                // Create local DB
+                let exec = require('child_process').exec;
+                let dbInit = exec(`sqlite3 ${upath.join( util.getConfigPath(), local.db_name )} < ./tables.sql`, {
+                    cwd: process.cwd()
+                }, function( err ){
+
+                    callback( null );
+
+                });
+
+                // Save
+                global.settings.set('db_location', upath.join( util.getConfigPath(), local.db_name ));
+
             }
         ], function( err ){ callback( err ) });
     },

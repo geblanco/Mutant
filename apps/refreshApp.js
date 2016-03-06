@@ -7,7 +7,7 @@ var exp = {
 	wrapper: {
 		"appName": "Refresh Mutant",
 		"subText": "Refresh Apps index, useful when a new application has been installed and you want it to be catched by Mutant",
-		"appCmd": "refreshApp",
+		"appCmd": "refresh",
 		"iconPath": "../icons/refresh.png",
 		"internal": true
 	},
@@ -26,4 +26,11 @@ if( global.settings.get('shortcuts.RefreshApps') ){
 	
 }
 
-module.exports = exp;
+module.exports = {
+    getRegex: function(){
+        return exp.regex;
+    },
+    getWrapper: function(){
+        return exp;
+    }
+}

@@ -9,7 +9,7 @@ var _netSearch = function( exec, query ){
 
 }
 
-module.exports = {
+var exp = {
 	fn: _netSearch,
 	wrapper: {
 		"appName": "Google Search",
@@ -17,5 +17,14 @@ module.exports = {
 		"appCmd": "netSearch",
 		"iconPath": "../icons/google.png",
 		"internal": true
+	}
+}
+
+module.exports = {
+	getRegex: function(){
+		return exp.regex || null;
+	},
+	getWrapper: function(){
+		return exp;
 	}
 }

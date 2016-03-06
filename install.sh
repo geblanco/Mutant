@@ -213,6 +213,12 @@ require 'pkg-config'
 install linux gtk+-3.0
 install linux librsvg2-dev
 
+if [ "$pmanager" == "pacman" || "$pmanager" == "yaourt" ]; then
+	install sqlite
+else
+	install sqlite3 libsqlite3-dev
+fi
+
 # Check for dependencies that needs to be installed
 # Some can be installed right away, others not
 install linux git
@@ -222,7 +228,7 @@ require node
 require electron
 
 echo ""
-echo "= Finished Installing!"
+echo "= Finished install"
 echo ""
 echo "= starting setup"
 
@@ -234,7 +240,7 @@ cd install
 "{\
 	\n\"version\": \"0.1.0\",\
 	\n\"theme\": \"Humanity\",\
-	\n\"db_port\": 42511,\
+	\n\"db_name\": \"mutant.sqlite3\",\
 	\n\"shortcuts\": {\
 		\n\"launch\": \"Ctrl+Space\"\
 	\n}\
@@ -267,5 +273,5 @@ mv ./install/listApps ./back/listApps
 # rm ./TheMutant.desktop
 
 echo ""
-echo "= Finished Installing!"
+echo "= Finished setup"
 echo ""
