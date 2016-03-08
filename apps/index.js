@@ -110,7 +110,7 @@ var _loadApplication = function( mod ){
 		global.async.waterfall([
 
 			function( callback ){
-				if( _app.shouldReload && _app.shouldReload() ){
+				if( !_app.shouldReload || _app.shouldReload() ){
 					if( _app.preLoad ){
 						return _app.preLoad( callback );
 					}
@@ -134,7 +134,7 @@ var _loadApplication = function( mod ){
 				callback( null );
 			},
 			function( callback ){
-				if( _app.shouldReload && _app.shouldReload() ){
+				if( !_app.shouldReload || _app.shouldReload() ){
 					if( _app.postLoad ){
 						return _app.postLoad( callback );
 					}	

@@ -40,6 +40,39 @@ var _constructItem = function( id, item ){
 	return a;
 }
 
+var _constructAppItem = function( id, item ){
+	// Item should have command and a shortcut
+	// Add on click too
+	var a = $('<tr/>', {
+		"id": 'li-' + id
+	}).append(
+		$('<th/>', {
+	    	"text": id+1
+	    })
+	).append(
+		$('<th/>', {
+	    	"text": item.web_name
+	    })
+	).append(
+		$('<th/>', {
+	    	"text": item.app_name
+	    })
+	).append(
+		$('<th/>', {
+	    	"text": item.url
+	    })
+	).append(
+		$('<th/>', {
+	    	"text": item.shortcut || '_unset_'
+	    })
+	).append(
+		$('<th/>', {
+	    	"text": item.icon || '_unset_'
+	    })
+	);
+	return a;
+}
+
 var _enterRecMode = function( id, type ){
 	// Start recording
 	_currBtn = id;
@@ -171,6 +204,18 @@ $(function(){
 				el.data('command', item.command);
 				el.data('shortcut', item.shortcut);
 				$('#table').append( el );
+			})
+		}
+	})
+
+	ipc.on('resultsForWebAppsView', function( event, list ){
+		list = JSON.parse( list );
+		console.log('resultsForWebAppsView', list);
+		if( list.length ){
+			list.forEach(function( item, idx ){
+				var el = _constructAppItem( idx, item );
+				el.data(item);
+				$('#web-table').append( el );
 			})
 		}
 	})

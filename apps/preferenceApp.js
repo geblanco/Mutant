@@ -69,6 +69,13 @@ var _launchPreferences = function(){
     ipc.on('shortcutChangeApplication', _saveAppShortcut);
     ipc.on('createWebApp', _saveNewApp);
 
+    // Request Web Apps
+    router.route('webApps', 'GET', function( err, result ){
+        if( !err && result.length > 1 ){
+            settingsWindow.send('resultsForWebAppsView', result);
+        }
+    })
+
 	settingsWindow.on('close', function( evt ){
 		// nullify
 		console.log('[PREFERENCE APP] Closing preferences');

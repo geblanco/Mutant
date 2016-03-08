@@ -5,77 +5,77 @@ var _utils   = global.app.utils;
 var sqlite 	 = require('sqlite3').verbose();
 var router 	 = (function(){ var r = require('ElectronRouter'); return new r('WEB_SEARCH'); })()
 var DB 		 = null;
-
-var _webSearch = function( app, exec, query ){
-
-	/*if( exp !== null && _queryRegex !== null ){
-
-		// Search the web app
-		var apps = _queryRegex.filter(function( reg ){
-			return reg.test( query );
-		})
-		apps.forEach(function( app, idx ){
-
-			var search = null;
-			if( exp[idx].regex ){
-				search = _utils.cleanQuery([exp[idx].regex[0]].concat( _queryRegex ), query);
-				if( search ){
-					query = search;
-				}
-			}
-			query = app.url + query;
-			_spawner( 'xdg-open', [query] );
-		
-		})
-
-	}*/
-	console.log('_webSearch', arguments);
-}
+var fs		 = require('fs');
+var tpl		 = require('./tpl');
+var webApps  = [];
 
 // Load every registered web.
 var _loader = function( callback ){
 
-	/*DB = new sqlite.Database( global.settings.get('db_location'), sqlite.OPEN_READWRITE, function( err ){
+	console.log('webSearchApp preLoad');
+
+	global.async.waterfall([
+
+		// Open DB
+		function( callback ){
+			DB = new sqlite.Database(
+				global.settings.get('db_location'),
+				sqlite.OPEN_READWRITE,
+				callback
+			);
+
+		},
+		// Load web apps
+		function( callback ){
+
+			DB.all('SELECT * FROM web_apps', callback);
 		
-		if( err ){
-			DB = null;
-			return;
-		}
+		},
+		// Check - TODO, change readdir by exists on the row		
+		function( rows,	callback ){
+			// For each row, check that it is present on 
+			// the application index and that it has its template
+			var appIndex = require('../index.json');
+			rows.forEach(r => {
 
-		// Load webs
-		DB.all('SELECT * FROM web_apps', function( err, rows ){
-			
-			if( err || !rows.length ){
-				callback();
-				return;
-			}
+				try{
+					// Check template
+					fs.existsSync('./webSearchApp/' + r.app_name + '.js');
+				}catch( e ){
+					// ENOENT
+					fs.writeFileSync(
+						global.upath.join(__dirname, '/', r.app_name + '.js'),
+						tpl({ textName: r.web_name, appCmd: r.app_name, url: r.url, icon: r.icon })
+					);
+				}
+		
+				// Check index
+				if( !appIndex.hasOwnProperty( r.app_name ) ){
+					appIndex[ r.app_name ] = './webSearchApp/' + r.app_name;
+				}
 
-			console.log('LOADER', rows);
-			rows.forEach(function( web ){
+				// Check shortcut
+				if( global.settings.get(`shortcut.${r.app_name}`) ){
+					r['shortcut'] = global.settings.get(`shortcut.${r.app_name}`);
+				}
 
-				if( exp === null) exp = [];
+				// Save on cache
+				webApps.push( r );
 
-				exp.push({
-					fn: function(e,q){ _webSearch(web.app_name,e,q) },
-					wrapper: {
-						"appName": "Open search on `${web.web_name}`",
-						"subText": "Search whatever on `${web.web_name}`",
-						"appCmd": "webSearch",
-						"iconPath": web.icon?web.icon:null,
-						"internal": true
-					}
-				})
+				fs.writeFile( global.upath.join(__dirname, '/../index.json'), JSON.stringify( appIndex, null, 4 ), callback );
+
 
 			})
-			
-			module.exports = exp;
-			callback();
-		})
 
-	})*/
+		}
+
+	], function( err, result ) {
+		callback();
+	})
 
 }
 
+// Handle apps save 
 router.post('registerWebApp', function( req, res ){
 	console.log('registerWebApp', req.params);
 
@@ -83,9 +83,6 @@ router.post('registerWebApp', function( req, res ){
 	if( !app.textName || !app.appCmd || !app.url ){
 		return callback('BAD PARAMS');
 	}
-
-	var fs = require('fs');
-	var tpl= require('./tpl');
 
 	global.async.waterfall([
 		
@@ -142,8 +139,14 @@ router.post('registerWebApp', function( req, res ){
 
 })
 
+// Handle apps request
+router.get('webApps', function( req, res ){
+	res.json( null, webApps);
+})
+
+// Does not really matter, just for completness
 var exp = {
-	fn: _webSearch,
+	fn: function(){},
 	wrapper: {
 		"appName": "Open search on webSearch",
 		"subText": "Search whatever on webSearch",
@@ -154,6 +157,7 @@ var exp = {
 }
 
 module.exports = {
+	preLoad: _loader,
     getRegex: function(){
         return exp.regex || null;
     },
