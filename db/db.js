@@ -1,110 +1,130 @@
-'use strict';
+/*
+	depends on lodash, fs
+	global router, upath
+*/
+'use strict'
 
 // Dependencies
-var electron= require('electron');
-var spawn 	= require('child_process').spawn;
-var fork	= require('child_process').fork;
-var app		= electron.app;
-var fs 		= require('fs');
-var dbServer= null;
-var returnCb= function(){};
-// Variables
-var dbs = [{
-	name	: 'chrome',
-	dir		: global.upath.join( app.getPath('appData'), 'google-chrome/Default/History'),
-	query	: 'SELECT url, title FROM urls WHERE title LIKE ? LIMIT 20'
-},{
-	name	: 'firefox',
-	dir		: '',
-	query	: 'SELECT url, title FROM moz_places WHERE title LIKE ? ORDER BY last_visit_date DESC LIMIT 20',
-}];
+const _ 		  = require('lodash')
+const fs 		  = require('fs')
+let databases = {}
+let mainDb = { name: 'dbMain', query: (q,cb)=>{cb()} }
+let unresolved = []
 
-var _init = function( callback ){
-	global.async.waterfall([
-		// Search firefox db
-		function( callback ){
-			var search = spawn('find', [app.getPath('home'), '-name', 'places.sqlite']);
-			search.stdout.on('data', function( data ){
-				var str = data.toString('utf8');
-				// Fix ending \n
-				dbs[1].dir = str.substring(0, str.indexOf('\n'));
-				console.log('[DB MAIN] found db location', dbs[1].dir);
-			})
-			search.on('close', function( code ){
-				if( code ){
-					callback( null, [] );
+let _start = ( main, data, end ) => {
+	async.parallel([
+		// Load Main db
+		( callback ) => {
+			let d = require( upath.join( __dirname, main ) )
+			d.init((err, db) => {
+				if( !err ){
+					mainDb = db
 				}else{
-					callback( null, dbs );
+					Logger.log('[DB MANAGER] Bad init on Database', main, 'skipping')
 				}
+				end( null )
+				callback( null )
 			})
 		},
-		// Start and setup database process
-		function( dbs, callback ){
-			dbServer = fork( global.upath.join(__dirname, 'dbProcess.js'), dbs.map(function(db){ return JSON.stringify(db) }), {
-		    	//stdio: [ 'ignore', 'ignore', 'ignore' ],
-				cwd: process.cwd()
-		    });
-		    dbServer.on('message', _handle);
-		    dbServer.on('close', function (code) {
-				console.log('[DB MAIN] db process exited with code ' + code);
-				dbServer.removeListener('message', _handle);
-				dbServer = null;
-		    });
-		    console.log('[DB MAIN] Initializing', dbs);
-			callback( null );
+		// Load the rest
+		( callback ) => {
+			async.each( Object.keys(data), ( dbType, cb ) => {
+
+				databases[ dbType ] = []
+				async.each( data[dbType], ( file, cb ) => {
+
+					let d = require( upath.join( __dirname, file ) )
+					d.init((err, db) => {
+						if( !err ){
+							databases[ dbType ].push( db )
+						}else{
+							Logger.log('[DB MANAGER] Bad init on Database', file, 'skipping')
+						}
+						cb( null )
+					})
+
+				}, cb )
+
+			}, callback )
 		}
-	], callback);
+	], ( err ) => { if( !err ) router.send('ready::DB') })
 }
 
-var _handle = function( msg ){
-	if( msg.hasOwnProperty( 'results' ) ){
+let _queryAllDbs = ( query, callback ) => {
+	async.map( Object.keys( databases ), ( dbType, cb ) => {
+		_queryDbByType( dbType, query, cb)
+	}, ( err, results ) => {
+		callback( null, _.flatten( results ) )
+	})
+}
 
-		if( msg.results ){
-
-			returnCb(null, JSON.parse(msg.results));
-
+let _queryDbByType = ( dbType, query, callback ) => {
+	async.map( databases[ dbType ], ( db, cb ) => {
+		db.query( query, cb )
+	}, ( err, results ) => {
+		if( err ){
+			callback( null, [] )
 		}else{
-			
-			returnCb('bad result');
-
+			callback( null, _.flatten( results ).filter( r => r !== undefined && r !== null ) )
 		}
-
-	}
+	})
 }
 
-var _query = function( query, callback ){
-	// Check query does not contain strange characters (%, _) that affect to sql
-	//console.log('Going to query the server');
-	query = query || '';
-	if( query.indexOf('%') === -1 && query.indexOf('_') === -1 ){
-		query = '%' + query + '%';
-	}
-	if( !(query instanceof Array) ){
-		query = [query];
-	}
-	// It may not be ready yet or errored
-	if( dbServer ){
-		returnCb = callback;
-		dbServer.send({'query': query});
+let _query = function( db, query, callback ){
+	if( 1 === arguments.length ){
+		callback = db
+		db = query = null
+	}else if( 2 === arguments.length ){
+		callback = query
+		query = db
+		db = null
 	}else{
-		callback(null, []);
+		db = db.toLowerCase().trim()
+	}
+	if( !query ){
+		callback( null )
+	}else if( !db || db === mainDb.name ){
+		// Default to main db
+		mainDb.query( query, callback )
+	}else if( db === 'all' ){
+		async.parallel([
+			// Start with mainDb
+			function( cb ){
+				mainDb.query(query, cb )
+			},
+			function( cb ){
+				_queryAllDbs( query, cb )
+			}
+		], function( err, result ){
+			if( err ){
+				callback( err )
+			}else{
+				callback( null, _.flatten( result ) )
+			}
+		})
+	}else if( databases.hasOwnProperty( db ) ){
+		_queryDbByType( db, query, callback )
+	}else{
+		callback( null )
 	}
 }
 
-var _shutdown = function( callback ){
-	console.log('[DB MAIN] db shutdown');
-	// Send quit signal
-	//dbClient.request('quit', function( err ){
-	//	console.log('[DB MAIN] done!');
-	//	if( err ) console.log('[DB MAIN] err closing db', err);
-	//});
-	// Close this side and send signal
-	dbServer.send('SIGHUP');
-	callback();
+let _shutdown = function( callback ){
+	Logger.log('[DB MAIN] db shutdown')
+	let err = null
+	async.each( Object.keys( databases ), ( type, cb ) => {
+		async.each( databases[ type ], ( db, cb ) => {
+			
+			db.DB.close()
+			cb()
+
+		}, cb )
+	}, callback )
 }
 
 module.exports = {
-	init: _init,
+	start: _start,
 	query: _query,
+	getMainDB: () => { return mainDb },
 	shutdown: _shutdown
 }
