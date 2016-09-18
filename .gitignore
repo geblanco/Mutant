@@ -33,7 +33,7 @@ node_modules
 .node_repl_history
 
 # Executables
-apps/native/listApps
+back/listApps
 
 # Icons
 misc/apps.json
@@ -48,6 +48,3 @@ tests
 
 # Dist
 mkDist.sh
-
-# Utils
-*.sh

@@ -14,22 +14,16 @@
   },
   "main": "main.js",
   "dependencies": {
-    "ElectronRouter": "https://github.com/m0n0l0c0/ElectronRouter.git",
+    "steed": "*",
     "async": "*",
-    "backbone": "^1.3.2",
-    "commander": "^2.9.0",
     "electron-settings": "*",
-    "fs-extra": "^0.30.0",
     "jquery": "*",
     "librsvg": "*",
-    "linvodb3": "*",
     "lodash": "*",
-    "medeadown": "*",
     "mkdirp": "*",
     "sqlite3": "*",
-    "steed": "*",
-    "underscore": "^1.8.3",
-    "upath": "*"
+    "upath": "*",
+    "ElectronRouter": "https://github.com/m0n0l0c0/ElectronRouter.git"
   },
   "devDependencies": {
     "electron-packager": "^5.1.0"
