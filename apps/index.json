@@ -1,9 +1,0 @@
-{
-    "preference": "./preferenceApp",
-    "netGo": "./netGoApp",
-    "netSearch": "./netSearchApp",
-    "browserHistory": "./browserHistoryApp",
-    "quit": "./quitApp",
-    "refresh": "./refreshApp",
-    "webSearch": "./webSearchApp/webSearchApp"
-}

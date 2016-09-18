@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+  	<!-- <link rel="stylesheet" type="text/css" href="../css/main.css" />-->
+  	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  	<!-- Bootstrap -->
+  	<link href="../js/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  	<!-- jQuery (necessary for Bootstrap's JavaScript plugins, MOD: Included in minified version) -->
+		<script src="../js/lib/bootstrap/js/bootstrap.min.js"></script>
+	<!-- ********* -->
+	<title>The Mutant - Settings</title>
+</head>
+<body>
+	<div id="pref-panel" class="panel panel-default">
+		<div id="pref-panel-heading" class="panel-heading">
+			<span id="pref-panel-heading-txt">Preferences</span>
+			<button type="button" class="btn btn-danger" id="cancel-rec-btn">Cancel</button>
+		</div>
+		<table id="item-list" class="table">
+			<thead>
+		    <tr>
+					<th>Icon</th>
+					<th>Command</th>
+					<th>URL/Location</th>
+					<th>Shortcut</th>
+		    </tr>
+		  </thead>
+		  <tbody></tbody>
+	 	</table>
+	</div>
+	<script type="text/template" id="item-template">
+		<th><img class="icon" src=<%-icon%> viewBox="0 0 48 48" /></th>
+            <th><label class="name"><%- name %></label></th>
+            <!-- <th><label class="location"><%- location %></label></th> -->
+            <th>
+            	<% if( (location !== '' && location !== '_unset_') ) { %>
+            		<button type="button" class="altIn btn btn-default" id="alt-<%- id %>"><%- (location !== '' && location !== '_unset_')?location:'' %></button>
+            	<% }else{ %>
+            		<label class="location"><%- location %></label>
+            	<% } %>
+            </th>
+            <th>
+                <button type="button" class="in btn btn-default" id="btn-<%- id %>"><%- (scut !== '' && scut !== '_unset_')?scut:'NOT SET' %></button>
+            </th>
+	</script>
+	<!-- DEPENDENCIES -->
+		<script src="../js/lib/common.js"></script>
+		<script type="text/javascript">
+			var keys = require( upath.join( __dirname, '../js/lib/keyboard' ) );
+		</script>
+		<!-- Models, Collections -->
+		<script src="../js/lib/backbone.routerStorage-min.js"></script>
+		<script src="../js/models/item-model.js"></script>
+		<script src="../js/collections/items-collection.js"></script>
+		<!-- Views -->
+		<script src="../js/views/items-settings-view.js"></script>
+		<script src="../js/views/app-settings-view.js"></script>
+		<!-- Entry Point -->
+		<script src="../js/app-settings.js"></script>
+</body>
+</html>
