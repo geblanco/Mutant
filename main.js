@@ -42,6 +42,13 @@
 
       let localSettings = require( upath.join(__dirname, 'misc', 'settings.json') )
       if( Object.keys( settings.get() ).length === 0 ){
+        // Should have been created during installation
+        try
+          let aux = require( upath.join(__dirname, 'misc', 'theme.json') )
+          localSettings.theme = aux.theme
+        }catch( e ){
+          Logger.log('[MAIN] No theme file found!!')
+        }
         // First launch
         // TODO => default config for rsvg
         // default theme

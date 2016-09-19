@@ -14,25 +14,32 @@
   },
   "main": "main.js",
   "dependencies": {
-    "async": "*",
-    "backbone": "^1.3.2",
+    "async": "^2.0.1",
+    "backbone": "^1.3.3",
     "commander": "^2.9.0",
     "electron-router": "^0.3.1",
-    "electron-settings": "*",
+    "electron-settings": "~1.1.1",
     "erbs": "git+https://github.com/m0n0l0c0/erbs.git",
     "fs-extra": "^0.30.0",
-    "jquery": "*",
-    "librsvg": "*",
-    "linvodb3": "*",
-    "lodash": "*",
-    "medeadown": "*",
-    "mkdirp": "*",
-    "sqlite3": "*",
-    "steed": "*",
+    "jquery": "^3.1.0",
+    "librsvg": "^0.7.0",
+    "linvodb3": "^3.25.0",
+    "lodash": "^4.16.0",
+    "medeadown": "^1.1.8",
+    "mkdirp": "^0.5.1",
+    "sqlite3": "^3.1.4",
+    "steed": "^1.1.3",
     "underscore": "^1.8.3",
-    "upath": "*"
+    "upath": "^0.2.0"
   },
   "devDependencies": {
-    "electron-packager": "^5.1.0"
+    "electron-packager": "^5.1.0",
+    "electron-rebuild": "^1.2.1"
+  },
+  "scripts": {
+    "prepare": "chmod 755 ./install/install.sh && chmod 755 ./install/postinstall.sh",
+    "install": "./install/install.sh",
+    "postinstall": "./install/postinstall.sh",
+    "dist": "npm run prepare && npm run install && npm run postinstall"
   }
 }
