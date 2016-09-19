@@ -22,11 +22,11 @@ let _pickUntakenName = ( baseDir ) => {
 let _prettyDate = () => {
   let date = new Date()
   let ret = `${date.getHours()}`
-  if( Math.floor(date.getHours()/10) == 0 ){
+  if( date.getHours() < 100 ){
     ret = `0${date.getHours()}`
   }
   ret += `:${date.getMinutes()}`
-  if( Math.floor(date.getMilliseconds()/100) == 0 ){
+  if( date.getMilliseconds() < 100 ){
     ret += `:0${date.getMilliseconds()}`
   }else{
     ret += `:${date.getMilliseconds()}`

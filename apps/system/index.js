@@ -2,7 +2,7 @@
 
 let router   = require('electron-router')('SYSTEMS_APPS')
 // Apps index
-let _appIndex = require('./index.json');
+let _appIndex = require( upath.joinSafe(__dirname, './index.json') );
 // Real applications
 let _internalApps = {};
 // Regex for each application
@@ -65,7 +65,7 @@ let _reloadApplication = function( app ){
 
 	// Reload index, just in case...
 	// require.cache['./index.json'] = undefined;
-	_appIndex = require('./index.json');
+	_appIndex = require( upath.joinSafe( __dirname, './index.json') );
 
 	if( _appIndex.hasOwnProperty( app ) ){
 		// Invalidate cache to ensure it's required again
@@ -100,10 +100,10 @@ let _reloadApplication = function( app ){
 let _loadApplication = function( mod, callback ){
 
 	callback || ( callback = ()=>{} );
-	Logger.log('[LOADER] Loading application "' + mod + '"', _appIndex[ mod ]);
+	Logger.log('[LOADER] Loading application "' + mod + '"', upath.joinSafe(__dirname, _appIndex[ mod ]) );
 	try{
 		// Load each module
-		let _app = require( _appIndex[ mod ] );
+		let _app = require( upath.joinSafe( __dirname, _appIndex[ mod ] ) );
 
 		global.async.waterfall([
 
@@ -149,7 +149,7 @@ let _loadApplication = function( mod, callback ){
 let _loadApplications = function(){
 
 	// Reload index
-	let _appIndex = require('./index.json');
+	let _appIndex = require( upath.joinSafe(__dirname, './index.json') );
 
 	// Load applications
 	for( let mod in _appIndex ){
@@ -205,7 +205,7 @@ let _start = function( callback ){
 	// Locate applications
 	// Load index (cache)
 	// TODO => Better setup DB??
-	let _appIndex = require('./index.json');
+	let _appIndex = require( upath.joinSafe(__dirname, './index.json') );
 	Logger.log('[SYSTEM APPS] Loading modules...');
 	// Load applications
 	global.async.each( Object.keys(_appIndex), _loadApplication, callback );

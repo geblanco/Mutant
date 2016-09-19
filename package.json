@@ -37,9 +37,10 @@
     "electron-rebuild": "^1.2.1"
   },
   "scripts": {
-    "prepare": "chmod 755 ./install/install.sh && chmod 755 ./install/postinstall.sh",
-    "install": "./install/install.sh",
-    "postinstall": "./install/postinstall.sh",
-    "dist": "npm run prepare && npm run install && npm run postinstall"
+    "prepare": "chmod 755 ./install/install.sh && chmod 755 ./install/postinstall.sh && chmod 755 ./install/mkDist.sh",
+    "doInstall": "./install/install.sh",
+    "postInstall": "./install/postinstall.sh",
+    "pkgBuild": "./install/mkDist.sh",
+    "dist": "npm run prepare && npm run doInstall && npm run postInstall && npm run pkgBuild"
   }
 }

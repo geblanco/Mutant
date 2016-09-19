@@ -8,26 +8,24 @@ pkgdesc="Linux Spotlight Productivity launcher, but more customizable."
 url="https://github.com/m0n0l0c0/mutant"
 provides=('mutant')
 arch=('x86_64')
-license=('custom')
-depends=('gtk2' 'nss' 'libnotify' 'libxtst' 'libgnome-keyring' 'gconf' 'alsa-lib')
+license=('MIT')
+depends=('pkg-config' 'gtk+-3.0' 'librsvg2-dev' 'sqlite' 'git' 'base-devel')
 makedepends=()
 backup=()
 install=''
-source=(
-    "https://release.gitkraken.com/linux/v${pkgver}.tar.gz"
-    "GitKraken.desktop"
-    "gitkraken.png"
-    "eula.html"
-)
+source=("https://github.com/m0n0l0c0/mutant/archive/v${pkgver}.tar.gz")
 md5sums=('d5e4a3cc3a3e7525468cdcb63ad3097b'
          'cf2a1746a0cafe11793af0801c78afeb'
          '04987b933d551d15c0813111d715bb9e'
          'e9ba6663e5f1f92cae31beb0074e8c6c')
 
 package() {
+    # Copy folder to fakeroot
     install -d "$pkgdir"/opt
+    # Copy executable to fakeroot
     cp -R "$srcdir"/GitKraken "$pkgdir"/opt/gitkraken
 
+    # Set permissions on pkdir
     find "$pkgdir"/opt/gitkraken/ -type f -exec chmod 644 {} \;
     chmod 755 "$pkgdir"/opt/gitkraken/gitkraken
 
