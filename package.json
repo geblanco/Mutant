@@ -23,7 +23,7 @@
     "fs-extra": "^0.30.0",
     "jquery": "^3.1.0",
     "librsvg": "^0.7.0",
-    "linvodb3": "^3.25.0",
+    "linvodb3": "git+https://github.com/m0n0l0c0/linvodb3.git",
     "lodash": "^4.16.0",
     "medeadown": "^1.1.8",
     "mkdirp": "^0.5.1",
@@ -37,10 +37,12 @@
     "electron-rebuild": "^1.2.1"
   },
   "scripts": {
-    "prepare": "chmod 755 ./install/install.sh && chmod 755 ./install/postinstall.sh && chmod 755 ./install/mkDist.sh",
-    "doInstall": "./install/install.sh",
-    "postInstall": "./install/postinstall.sh",
-    "pkgBuild": "./install/mkDist.sh",
-    "dist": "npm run prepare && npm run doInstall && npm run postInstall && npm run pkgBuild"
+    "prepare": "git clone http://github.com/m0n0l0c0/mutant-packager install",
+    "preinstall": "chmod 755 ./install.sh && chmod 755 ./postinstall.sh && chmod 755 ./mkDist.sh",
+    "doInstall": "./install.sh $(pwd)",
+    "postInstall": "./postinstall.sh $(pwd)",
+    "pkgBuild": "./mkDist.sh $(pwd)",
+    "postBuild": "find \"./mutant-linux-x64/\" -type f -exec chmod 644 {} \\; && chmod 755 mutant-linux-x64/mutant",
+    "dist": "npm run prepare && npm run doInstall && npm run postInstall && npm run pkgBuild && npm run postBuild"
   }
 }
