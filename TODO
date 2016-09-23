@@ -1,6 +1,0 @@
-On internet (link) regex, when append .com, search it on the sentence fisrt, before append
-EG: www.seriesyonkis.com/serie/loquesea ..... => www.seriesyonkis.com/serie/loquesea.com
-
-Validate string first, fails if end with \
-
-Move ALL settings to a same file and integrate with electron settings module

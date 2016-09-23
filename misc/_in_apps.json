@@ -1,65 +1,92 @@
 {
 	"preference": {
-		"appName": "Preferences",
-		"subText": "Launch Preferences Tab",
-		"appCmd": "preference",
-		"iconPath": "../icons/setting.png",
-		"internal": true
+		"name": "Preferences",
+		"text" : "Launch Preferences Tab",
+		"exec":  	"preference",
+		"data" : "",
+		"icon" : "setting.png",
+		"type" : "_internal_",
+		"regex0" : null,
+		"regex1": null
 	},
 	"quit": {
-		"appName": "Quit Mutant",
-		"subText": "Quit the App",
-		"appCmd": "quit",
-		"iconPath": "../icons/quit.png",
-		"internal": true
+		"name": "Quit Mutant",
+		"text" : "Quit the App",
+		"exec": "quit", 
+		"data" : "",
+		"icon" : "quit.png",
+		"type" : "_internal_",
+		"regex0" : null,
+		"regex1": null
 	},
 	"netGo": {
-		"appName": "Open Url",
-		"subText": "Open given Url",
-		"appCmd": "netGo",
-		"iconPath": "../icons/openurl.png",
-		"internal": true
+		"name": "Open Url",
+		"text" : "Open given Url",
+		"exec": "netGo", 
+		"data" : "",
+		"icon" : "openurl.png",
+		"type" : "_internal_",
+		"regex0" : null,
+		"regex1": null
 	},
 	"netSearch": {
-		"appName": "Google Search",
-		"subText": "Search whatever on the net",
-		"appCmd": "netSearch",
-		"iconPath": "../icons/google.png",
-		"internal": true
-	},
-	"browseHistory": {
-		"appName": "",
-		"subText": "",
-		"appCmd": "browseHistory",
-		"iconPath": "../icons/link.png",
-		"internal": true
+		"name": "Google Search",
+		"text" : "Search whatever on the net",
+		"exec":  "netSearch",
+		"data" : "",
+		"icon" : "google.png",
+		"type" : "_system_",
+		"regex0" : null,
+		"regex1": null
 	},
 	"refresh": {
-		"appName": "Refresh Mutant",
-		"subText": "Refresh Apps index, useful when a new application has been installed and you want it to be catched by Mutant",
-		"appCmd": "refresh",
-		"iconPath": "../icons/refresh.png",
-		"internal": true
+		"name": "Refresh Mutant",
+		"text" : "Refresh Apps index, useful when a new application has been installed and you want it to be catched by Mutant",
+		"exec": "refresh", 
+		"data" : "",
+		"icon" : "refresh.png",
+		"type" : "_internal_",
+		"regex0" : null,
+		"regex1": null
 	},
 	"githubSearch": {
-		"appName": "GitHub Search",
-		"subText": "Search any project on GitHub",
-		"appCmd": "githubSearch",
-		"iconPath": "../icons/github.png",
-		"internal": true
+		"name": "Github",
+		"text" : "Search whatever on Github",
+		"exec": "githubSearch",
+		"data" : "https://www.github.com/search?q=",
+		"icon" : "github.png",
+		"type" : "_web_app_",
+		"regex0": "^github (.*)",
+		"regex1" : null
 	},
 	"bitbucketSearch": {
-		"appName": "BitBucket Search",
-		"subText": "Search any project on BitBucket",
-		"appCmd": "bitbucketSearch",
-		"iconPath": "../icons/bitbucket.png",
-		"internal": true
+		"name": "BitBucket",
+		"text" : "Search whatever on BitBucket",
+		"exec": "bitbucketSearch",
+		"data" : "https://www.bitbucket.com/search?q=",
+		"icon" : "bitbucket.png",
+		"type" : "_web_app_",
+		"regex0": "^bitbucket (.*)",
+		"regex1": null
 	},
 	"wikiSearch": {
-		"appName": "Wikipedia Search",
-		"subText": "Search on Wikipedia",
-		"appCmd": "wikiSearch",
-		"iconPath": "../icons/wikipedia.png",
-		"internal": true
+		"name": "Wikipedia",
+		"text" : "Search whatever on Wikipedia",
+		"exec": "wikiSearch",
+		"data" : "https://en.wikipedia.org/w/index.php?search=",
+		"icon" : "wikipedia.png",
+		"type" : "_web_app_",
+		"regex0" :"^wikipedia (.*)",
+		"regex1": null
+	},
+	"youtubeSearch": {
+		"name": "YouTube",
+		"text" : "Search whatever on YouTube",
+		"exec": "youtubeSearch",
+		"data" : "https://www.youtube.com/results?search_query=",
+		"icon" : "youtube.png",
+		"type" : "_web_app_",
+		"regex0": "^youtube (.*)",
+		"regex1": null
 	}
 }

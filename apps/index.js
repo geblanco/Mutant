@@ -1,131 +1,115 @@
+/*
+	depends on lodash, electron-router, systemApps, nativeApps
+	globals upath, db, async
+	globalizes app{ utils, URL_REGEX }
+*/
+
 'use strict';
 
-var _spawner = require(global.upath.join(__dirname, '/../', 'back/utils')).spawner;
-var router   = (function(){ var r = require('ElectronRouter'); return new r(); })();
-// Apps index
-var _appIndex = require('./index.json');
-//var _specialApps = ['quit', 'preference', 'refresh'];
-// Real applications
-var _internalApps = {};
-// Regex for each application
-var REGEX = [];
+let _ = require('lodash')
+let _systemApps = require( global.upath.join( __dirname, 'system', 'index' ) )
+let _nativeApps = require( global.upath.join( __dirname, 'native', 'index' ) )
 // Apps namespace
 global.app = {
-	utils: require('./appUtils')
+	utils: require('./appUtils'),
+	URL_REGEX: new RegExp(/^(?:http(?:s)?\:\/\/(?:www\.)?)([^ ]+)$/gi)
 }
 
-// Util
-var _strSearch = function( str, query ){
+let _searchBrowserHistory = function( query, callback ){
 	
-	if( typeof str !== 'string' || typeof query !== 'string' ){
-		return -1;
-	}
-	str = str.toLowerCase();
-	query = query.toLowerCase();
-	return str.indexOf(query);
+	global.db.query('browsers', query, ( err, results ) => {
 
-}
+		if( err ){
+			return callback( err );
+		}
+		callback( null, _.uniqBy(results, ( a ) => a.title ).map(( result ) => {
+			// Deep copy
+			let aux = _systemApps.getInternalApp('browserHistory')
+			// Come in the form:
+			// url: ...
+			// title: ...
+			// browser: ...
+			aux.name = result.title
+			aux.text = result.url
+			return aux
+		}))
 
-var _searchApp = function( query ){
-	
-	var matches = [];
-	if( !REGEX.length ){
-		_loadApplications();
-	}
-	// For each application, 
-	// 	search by name,
-	//  search by regex
-	// As name regex almost always mathces
-	// Google dont get append,
-	// better approach, let each app match or not
-	// or, at least return its own name regex, 
-	// based on if it needs text append or is just a launchable
-	// Currently: As an app may process input text or not, meaning
-	// that it may accept input text, let it decide with its own regex
-	// by now may not be very useful, in the future may serve for flags
-	REGEX.forEach(function( Q, idx ){
-		// search by name
-		var reg = ('/^' + query + '/i');
-		if( _strSearch( Q.REG2, query ) !== -1 || Q.REG.test( query ) ){
-			matches.push( _internalApps[ Q.APP ].wrapper );
-		}
-		if( _internalApps[ Q.APP ].testQuery && _internalApps[ Q.APP ].testQuery( query ) ){
-			matches.push( _internalApps[ Q.APP ].wrapper );
-		}
 	})
-	return matches;
 
 }
 
-router.on('newAppShortcut', function( app ){
+let _lateAppend = function( err, results ){
 
-	console.log('[LOADER] Reloading application "' + app + '"');
-	if( _appIndex.hasOwnProperty( app ) ){
-		_loadApplication( app );
+	if( !err && results && results.length){
+		// Send data back to UI
+		//Logger.log('[APP LOADER]', 'Late Append', results.length, results);
+		router.send('UI::AppendToView', results);
 	}else{
-		console.log('[LOADER] Unknown application "' + app + '"');
+		Logger.log('[APP LOADER]', 'Late Append failed', err);
 	}
 
-});
+}
 
-var _loadApplication = function( mod ){
+let _registerEvents = function( callback ){
 
-	console.log('[LOADER] Loading application "' + mod + '"');
-	try{
-		// Load each module
-		var _app = require( _appIndex[ mod ]);
-		if( _app.regex ){
- 			console.log('[DEBUG]', _app);
-			// Construct the parseable object for later search
-			REGEX.push({
-				REG: _app.regex[ 0 ],
-				REG2: _app.regex[ 1 ] || mod,
-				APP: mod
-			});
+	router.on('launchApp', ( data ) => {
+		//Logger.log('[APP LOADER]', data.app);
+		// TODO => Type check should not be against undefined but a type
+		if( '_native_' === data.app.type ){
+			Logger.log('[APP LOADER] for spawner', data.app, data.query);
+			global.app.utils.spawn( data.app.exec );
+		}else{
+			_systemApps.launchApp( data.app.exec, data.app, data.query );
 		}
-		_internalApps[ mod ] = _app;
-	}catch(e){
-		console.log('[LOADER] ERROR Failed loading application', mod, e);
-	}
-}
+	});
 
-var _loadApplications = function(){
+	router.get('query', ( req, res ) => {
+		Logger.log('[APP LOADER]', 'query', req.params[0])
+		let query = req.params[0];
+		let matches = [];
 
-	// Reload index
-	var _appIndex = require('./index.json');
+		if( query !== '' && query !== ' '){
+	
+			// Internal apps: Preferences, Quit, Url
+			matches = matches.concat( _systemApps.searchApp( query, _lateAppend ) );
+			// Native apps: User installed applications
+			matches = matches.concat( _nativeApps.searchApp( query, _lateAppend ) );
+			// Broswser History files
+			_searchBrowserHistory( query, _lateAppend)
 
-	// Load applications
-	for( var mod in _appIndex ){
-		_loadApplication( mod );
-	}
-
-	//global.settings.on('change', handleChange);
-	//global.settings.on('save', handleChange);
-	//console.log('Registered to settings changes');
-}
-
-// Wrapper for deep copy, returns a new allocated object
-// avoiding overwrittings, call exceptionally
-var _getInternalApp = function( app ){
-
-	var ret = {};
-	if( _appIndex.hasOwnProperty( app ) ){
-		for(var i in _internalApps[ app ].wrapper){
-			ret[i] = _internalApps[ app ].wrapper[ i ];
 		}
-	}
-	return ret;
-	
+		// If nothing was found, just insert netSearch option
+		if( matches.length === 0 ){
+			matches.push( _systemApps.getInternalApp('netSearch') );
+		}
+		Logger.log('[APP LOADER]', 'Sending back', matches.length)
+		res.json( null, matches );
+
+		matches = null;
+
+	})
+
+	callback();
+
 }
 
-var _launchApp = function( cmd, exec, query ){
-	
-	_internalApps[ cmd ].fn( exec, query );	
+let _start = function( callback ){
+
+	global.async.parallel([
+		
+		_systemApps.start,
+		_nativeApps.start,
+		_registerEvents
+
+	], ( err ) => {
+
+		Logger.log('[APP LOADER] Done starting modules', (err?err:''));
+		callback( err );
+
+	});
 
 }
 
 module.exports = {
-	  searchApp 		: _searchApp
-	, getInternalApp	: _getInternalApp
-	, launchApp 		: _launchApp
+	start: _start
 }

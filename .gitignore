@@ -33,18 +33,18 @@ node_modules
 .node_repl_history
 
 # Executables
-back/listApps
+apps/native/listApps
 
+# Misc folder
 # Icons
 misc/apps.json
 misc/icons/*
+# Theme
+misc/theme.json
 
 # Tests
 refs
 tests
 
-# Misc
+# Distro files
 *.desktop
-
-# Dist
-mkDist.sh

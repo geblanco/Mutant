@@ -1,11 +1,51 @@
 {
 	"version": "0.1.0",
 	"theme": "Menda-Circle",
-	"db_port": 42511,
+	"dbDir": "database",
+	"dbMain": "dbMain",
+	"dbs": {
+		"browsers": ["dbChrome", "dbChromium", "dbFirefox"]
+	},
 	"shortcuts": {
 		"launch": {
 			"cmd": "Ctrl+Space",
-			"application": false
+			"type": "launcher"
+		},
+		"preference": {
+			"type" : "_internal_",
+			"regex1": null
+		},
+		"quit": {
+			"type" : "_internal_",
+			"regex1": null
+		},
+		"netGo": {
+			"type" : "_internal_",
+			"regex1": null
+		},
+		"netSearch": {
+			"type" : "_system_",
+			"regex1": null
+		},
+		"refresh": {
+			"type" : "_internal_",
+			"regex1": null
+		},
+		"githubSearch": {
+			"type" : "_web_app_",
+			"regex1" : null
+		},
+		"bitbucketSearch": {
+			"type" : "_web_app_",
+			"regex1": null
+		},
+		"wikiSearch": {
+			"type" : "_web_app_",
+			"regex1": null
+		},
+		"youtubeSearch": {
+			"type" : "_web_app_",
+			"regex1": null
 		}
 	}
 }
