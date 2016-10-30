@@ -1,0 +1,143 @@
+{
+	"version": "0.1.0",
+	"theme": "Menda-Circle",
+	"dbDir": "database",
+	"dbMain": "dbMain",
+	"dbs": {
+		"browsers": ["dbChrome", "dbChromium", "dbFirefox"]
+	},
+	"shortcuts": {
+		"launch": {
+			"cmd": "Ctrl+Space",
+			"type": "launcher"
+		},
+		"preference": {
+			"type" : "_internal_",
+			"regex1": null
+		},
+		"quit": {
+			"type" : "_internal_",
+			"regex1": null
+		},
+		"netGo": {
+			"type" : "_internal_",
+			"regex1": null
+		},
+		"netSearch": {
+			"type" : "_system_",
+			"regex1": null
+		},
+		"refresh": {
+			"type" : "_internal_",
+			"regex1": null
+		},
+		"githubSearch": {
+			"type" : "_web_app_",
+			"regex1" : null
+		},
+		"bitbucketSearch": {
+			"type" : "_web_app_",
+			"regex1": null
+		},
+		"wikiSearch": {
+			"type" : "_web_app_",
+			"regex1": null
+		},
+		"youtubeSearch": {
+			"type" : "_web_app_",
+			"regex1": null
+		}
+	},
+	"apps": {
+	  "preference": {
+	    "name" : "Preferences",
+	    "text" : "Launch Preferences Tab",
+	    "exec" : "preference",
+	    "data" : "",
+	    "icon" : "setting.png",
+	    "type" : "_internal_",
+	    "regex0": null,
+	    "regex1": null
+	  },
+	  "quit": {
+	    "name" : "Quit Mutant",
+	    "text" : "Quit the App",
+	    "exec" : "quit", 
+	    "data" : "",
+	    "icon" : "quit.png",
+	    "type" : "_internal_",
+	    "regex0": null,
+	    "regex1": null
+	  },
+	  "netGo": {
+	    "name" : "Open Url",
+	    "text" : "Open given Url",
+	    "exec" : "netGo", 
+	    "data" : "",
+	    "icon" : "openurl.png",
+	    "type" : "_internal_",
+	    "regex0": null,
+	    "regex1": null
+	  },
+	  "netSearch": {
+	    "name" : "Google Search",
+	    "text" : "Search whatever on the net",
+	    "exec" :  "netSearch",
+	    "data" : "",
+	    "icon" : "google.png",
+	    "type" : "_system_",
+	    "regex0": null,
+	    "regex1": null
+	  },
+	  "refresh": {
+	    "name" : "Refresh Mutant",
+	    "text" : "Refresh Apps index, useful when a new application has been installed and you want it to be catched by Mutant",
+	    "exec" : "refresh", 
+	    "data" : "",
+	    "icon" : "refresh.png",
+	    "type" : "_internal_",
+	    "regex0": null,
+	    "regex1": null
+	  },
+	  "githubSearch": {
+	    "name" : "Github",
+	    "text" : "Search whatever on Github",
+	    "exec" : "githubSearch",
+	    "data" : "https://www.github.com/search?q=",
+	    "icon" : "github.png",
+	    "type" : "_web_app_",
+	    "regex0": "^github (.*)",
+	    "regex1": null
+	  },
+	  "bitbucketSearch": {
+	    "name" : "BitBucket",
+	    "text" : "Search whatever on BitBucket",
+	    "exec" : "bitbucketSearch",
+	    "data" : "https://www.bitbucket.com/search?q=",
+	    "icon" : "bitbucket.png",
+	    "type" : "_web_app_",
+	    "regex0": "^bitbucket (.*)",
+	    "regex1": null
+	  },
+	  "wikiSearch": {
+	    "name" : "Wikipedia",
+	    "text" : "Search whatever on Wikipedia",
+	    "exec" : "wikiSearch",
+	    "data" : "https://en.wikipedia.org/w/index.php?search=",
+	    "icon" : "wikipedia.png",
+	    "type" : "_web_app_",
+	    "regex0":"^wikipedia (.*)",
+	    "regex1": null
+	  },
+	  "youtubeSearch": {
+	    "name" : "YouTube",
+	    "text" : "Search whatever on YouTube",
+	    "exec" : "youtubeSearch",
+	    "data" : "https://www.youtube.com/results?search_query=",
+	    "icon" : "youtube.png",
+	    "type" : "_web_app_",
+	    "regex0": "^youtube (.*)",
+	    "regex1": null
+	  }
+	}
+}
