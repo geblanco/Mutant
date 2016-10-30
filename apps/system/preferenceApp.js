@@ -23,6 +23,7 @@ let _launchPreferences = function(){
   settingsWindow.loadURL('file://' + global.upath.join( global.DIRS.INTERNAL_ROOT, 'ui/html/settings.html' ) );
 
   let router = require('electron-router')('PREFERENCE')
+
   router.get('settings', function( req, res ){
     if( applications.length ){
       return res.json( null, applications );
@@ -55,12 +56,17 @@ let _launchPreferences = function(){
 
     global.async.each( req.params, ( _app, cb ) => {
 
+      let reg = ''
+      // Permit user to unset shortcut (ie setting it to '')
       if( !_app.scut ){
-        return cb('BAD_REGEX');
+        _app.scut = null
+        reg = new RegExp('(?!)');
+      }else{
+        // Replace possible bad regex
+        _app.scut = _app.scut.replace(/\(\.\*\)/gi, '');
+        _app.scut = _app.scut.trim();
+        reg = new RegExp( `^${_app.scut} (.*)`, 'i' );
       }
-      // Replace possible bad regex
-      _app.scut = _app.scut.replace(/\(\.\*\)/gi, '');
-      _app.scut = _app.scut.trim();
       // query main db for saving new shortcut
       let db = global.db.getMainDB();
       db.findOne({ type: _app.type, exec: _app.exec }, ( err, doc ) => {
@@ -68,7 +74,6 @@ let _launchPreferences = function(){
         if( err ){
           cb( err );
         }else{
-          let reg = new RegExp( `^${_app.scut} (.*)`, 'i' );
           Logger.log('[PREFERENCE APP]', 'updateRegex', 1, 'reg pre', reg, doc.regex1);
           doc.regex1 = reg
           Logger.log('[PREFERENCE APP]', 'updateRegex', 2, 'reg post', reg, doc.regex1);
