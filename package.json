@@ -35,5 +35,10 @@
   "devDependencies": {
     "electron-packager": "^5.1.0",
     "electron-rebuild": "^1.2.1"
+  },
+  "scripts": {
+    "preinstall": "./install/envVars.sh",
+    "postinstall": "./install/gtkcc.sh ./install/listApps && mv ./install/listApps ./apps/native/listApps",
+    "dist": "./install/mkDist.sh ./"
   }
 }

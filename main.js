@@ -42,13 +42,6 @@
 
       let localSettings = require( upath.join(__dirname, 'misc', 'settings.json') )
       if( Object.keys( settings.get() ).length === 0 ){
-        // Should have been created during installation
-        try{
-          let aux = require( upath.join(__dirname, 'misc', 'theme.json') )
-          localSettings.theme = aux.theme
-        }catch( e ){
-          Logger.log('[MAIN] No theme file found!!')
-        }
         // First launch
         // TODO => default config for rsvg
         // default theme
@@ -56,7 +49,6 @@
         // default db location (main db)
         // default dirs
         // General Setup
-        settings.set( 'theme', localSettings.theme )
         settings.set( 'shortcuts', localSettings.shortcuts )
         settings.set( 'db_location', DIRS.DB )
         settings.set( 'first_time', true )
@@ -66,6 +58,9 @@
         Logger.log('[MAIN] Not first time')
         settings.set( 'first_time', false )
       }
+
+      // Write theme
+      if( !settings.get( 'theme' ) ) require( upath.join(__dirname, 'system/theme') ).writeThemeSync('Adwaita')
 
       // Ensure dir exists
       let mkdir = require('mkdirp')

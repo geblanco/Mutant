@@ -39,12 +39,8 @@ module.exports = {
 					callback( null, AppSchema )
 				}else{
 					// Load default apps data
-					var defaultData = require( upath.join(DIRS.INTERNAL_ROOT, 'misc', '_in_apps.json') )
-					var toSave = Object.keys( defaultData ).map(( key ) => {
-						//defaultData[ key ].regex0 = new RegExp( defaultData[ key ].regex0, 'i')
-						//defaultData[ key ].regex1 = new RegExp( defaultData[ key ].regex1, 'i')
-						return new AppSchema( defaultData[ key ] )
-					})
+					var defaultData = require( upath.join(DIRS.INTERNAL_ROOT, 'misc', 'settings.json') ).apps
+					var toSave = Object.keys( defaultData ).map(( key ) =>  new AppSchema( defaultData[ key ] ) )
 					// Logger.log('[DB MAIN]', 'toSave', JSON.stringify(toSave, null, 2))
 					AppSchema.save(toSave, function( err ){
 						if( err ){
