@@ -9,5 +9,6 @@
     "githubSearch": "./webSearchApp/githubSearch",
     "bitbucketSearch": "./webSearchApp/bitbucketSearch",
     "wikiSearch": "./webSearchApp/wikiSearch",
+    "aurSearch": "./webSearchApp/aurSearch",
     "youtubeSearch": "./webSearchApp/youtubeSearch"
 }
