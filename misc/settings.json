@@ -31,6 +31,10 @@
 			"type" : "_internal_",
 			"regex1": null
 		},
+		"aurSearch": {
+			"type" : "_web_app_",
+			"regex1": null
+		},
 		"githubSearch": {
 			"type" : "_web_app_",
 			"regex1" : null
@@ -97,6 +101,16 @@
 	    "icon" : "refresh.png",
 	    "type" : "_internal_",
 	    "regex0": null,
+	    "regex1": null
+	  },
+	  "aurSearch": {
+	    "name" : "Aur",
+	    "text" : "Search whatever on AUR",
+	    "exec" : "aurSearch",
+	    "data" : "https://aur.archlinux.org/packages/?K=",
+	    "icon" : "aur.png",
+	    "type" : "_web_app_",
+	    "regex0": "^aur (.*)",
 	    "regex1": null
 	  },
 	  "githubSearch": {
