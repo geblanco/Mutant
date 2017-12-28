@@ -31,6 +31,10 @@
 			"type" : "_internal_",
 			"regex1": null
 		},
+		"calculator": {
+			"type" : "_internal_",
+			"regex1": null
+		},
 		"aurSearch": {
 			"type" : "_web_app_",
 			"regex1": null
@@ -99,6 +103,16 @@
 	    "exec" : "refresh", 
 	    "data" : "",
 	    "icon" : "refresh.png",
+	    "type" : "_internal_",
+	    "regex0": null,
+	    "regex1": null
+	  },
+	  "calculator": {
+	    "name" : "Calculator",
+	    "text" : "Fast math calculations",
+	    "exec" : "",
+	    "data" : "",
+	    "icon" : "calculator.png",
 	    "type" : "_internal_",
 	    "regex0": null,
 	    "regex1": null
