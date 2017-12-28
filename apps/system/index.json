@@ -5,6 +5,7 @@
     "browserHistory": "./browserHistoryApp",
     "quit": "./quitApp",
     "refresh": "./refreshApp",
+    "calculator": "./calculatorApp",
     "webSearch": "./webSearchApp/webSearchApp",
     "githubSearch": "./webSearchApp/githubSearch",
     "bitbucketSearch": "./webSearchApp/bitbucketSearch",

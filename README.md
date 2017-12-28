@@ -57,7 +57,7 @@ After using qdore's mutate for almost a year and customizing it a lot I miss som
 * Use and launch custom scripts (search on given scripts folder)
 * ~~Search on more browsers history~~ (By now support for Chrome and Firefox)
 * Dictionary
-* Calculator
+* ~~Calculator~~
 * Translator
 * Maps??
 * Web preview (Apple's spotlight style)
