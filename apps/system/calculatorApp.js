@@ -1,6 +1,6 @@
 'use strict';
 
-var _numberRegex = /([0-9]+(?:\.[0-9]+)?(?:[ ]?[/*+-]+[ ]?[0-9]+(?:\.[0-9]+)?)*)$/
+var _numberRegex = /^([0-9]+(?:\.[0-9]+)?(?:[ ]?[/*+-]+[ ]?[0-9]+(?:\.[0-9]+)?)*)$/
 // make a regex out of the name for searching strings
 var _queryRegex = /^calc ([0-9]+(?:\.[0-9]+)?(?:[ ]?[/*+-]+[ ]?[0-9]+(?:\.[0-9]+)?)*)$/i;
 var _fn = function( exec, query ){
