@@ -55,6 +55,7 @@ let _showWindow = function(){
   //Logger.log('[UI MAIN WINDOW] Showing');
   windowParams.sizedElems = 0;
   mainWindow.show();
+  mainWindow.focus();
 }
 
 let _handleShortcut = function( evt ){
