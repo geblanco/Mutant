@@ -2,10 +2,10 @@
 
 var _netGo = function( exec, query ){
 
-	var reg = /((http|ftp|https)\:\/\/)(www\.)?|(www\.)([^\.]*)/i;
-	if( !reg.test( query ) ){
-		// Lack starting www....
-		query = 'www.' + query;
+	var http = /((http|ftp|https)\:\/\/)/i
+	if( !http.test( query ) ){
+		// Lack starting http(s)... xdg-open needs it to work
+		query = 'https://' + query;
 	}
 
 	global.app.utils.spawn( 'xdg-open', [query] );
@@ -22,20 +22,20 @@ var exp = {
 		type: '_internal_'
 	}, 
 	regex: [
-		/(?:(?:http|ftp|https)\:\/\/(?:www\.))([^\.]*)(?:\.com|\.es)?|(?:(?:http|ftp|https)\:\/\/(?:www\.))?([^\.]*)(?:\.)/i
+		/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i
 	]
 }
 
 module.exports = {
 	getRegex: function(){
-        return (exp.regex)?exp.regex:null;
-    },
-    getUserRegex: function(){
-        return (exp.regex && exp.regex.length > 1)?exp.regex[1]:null;
-    },
-    getStdRegex: function(){
-        return (exp.regex && exp.regex.length)?exp.regex[0]:null;
-    },
+      return (exp.regex)?exp.regex[0]:null;
+  },
+  getUserRegex: function(){
+      return (exp.regex && exp.regex.length > 1)?exp.regex[1]:null;
+  },
+  getStdRegex: function(){
+      return (exp.regex && exp.regex.length)?exp.regex[0]:null;
+  },
 	getWrapper: function(){
 		return exp;
 	}
