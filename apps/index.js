@@ -79,7 +79,7 @@ let _registerEvents = function( callback ){
 
 		}
 		// If nothing was found, just insert netSearch option
-		if( matches.length === 0 ){
+		if( matches.length < 2 ){
 			matches.push( _systemApps.getInternalApp('netSearch') );
 		}
 		Logger.log('[APP LOADER]', 'Sending back', matches.length)
