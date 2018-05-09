@@ -8,25 +8,37 @@ It is intended to substitute the default search bar adding more features and usa
 ## How to use it
 Install and launch, default launch shortcut is Ctrl+Space, but it's overridable.
 
+### Distro Installation
+By now, only Arch Linux is supported (community repo must be enabled), just issue
+
+```bash
+sudo pacman -S mutant
+```
+
+### Manual Installation
 Get in the project dir
 
-`cd mutant`
+```bash
+cd mutant
+```
 
-Make installer executable
+Source the necessary variables (electron dependant)
 
-`chmod a+x install.sh`
+```bash
+source install/envVars.sh
+```
 
-Launch installer
+Install node modules
 
-`sudo ./install.sh`
-
-Install modules
-
-`sudo npm install`
+```bash
+npm i
+```
 
 Launch app
 
-`electron .`
+```bash
+electron .
+```
 
 ## Current Features
 * Search and launch any installed app
@@ -46,7 +58,7 @@ After using qdore's mutate for almost a year and customizing it a lot I miss som
 
 ## Dependencies
 * nodejs
-* electron (atom shell)
+* electron
 * pkg-config
 * gtk+-3.0
 * librsvg2-dev
@@ -62,7 +74,3 @@ After using qdore's mutate for almost a year and customizing it a lot I miss som
 * Maps??
 * Web preview (Apple's spotlight style)
 
-## Notes
-One of the problems of mutate is theme detection (used for icon selection), which is a fail of gtk lib, here I solved it passing the name of the current theme by parameter. In a near future there shold be a script for detecting theme (which depends on the distro)
-
-Installer script was taken partially from [node-tensorflow](https://github.com/node-tensorflow/node-tensorflow)
