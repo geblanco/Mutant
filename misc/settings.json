@@ -121,7 +121,7 @@
 	    "name" : "Aur",
 	    "text" : "Search whatever on AUR",
 	    "exec" : "aurSearch",
-	    "data" : "https://aur.archlinux.org/packages/?K=",
+	    "data" : "https://aur.archlinux.org/packages/?K=|https://www.archlinux.org/packages/?q=",
 	    "icon" : "aur.png",
 	    "type" : "_web_app_",
 	    "regex0": "^aur (.*)",
