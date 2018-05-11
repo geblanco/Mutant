@@ -1,11 +1,13 @@
 'use strict';
 
+var { clipboard } = require('electron')
 var _numberRegex = /^([-+\.\/*\d\(\)\s]+)$/
 // make a regex out of the name for searching strings
 var _queryRegex = /^calc ([-+\.\/*\d\(\)\s]+)$/i
 var _fn = function( exec, query ){
 
-	Logger.log('[CALC] Not spawnable!')
+	Logger.log('[CALC] Copying calculations to clipboard:', query)
+	clipboard.writeText(query)
 }
 
 var _defaultText = 'Fast math calculations.'
@@ -19,7 +21,7 @@ var exp = {
 	wrapper: {
 		name: 'Calculator',
 		text: _defaultText,
-		exec: '',
+		exec: 'calculator',
 		icon: 'calculator.png',
 		type: '_internal_'
 	},
@@ -41,7 +43,7 @@ module.exports = {
 	getWrapper: function(){
 		var text = _defaultText
 		if( _currentCalc.leftSide && _currentCalc.rightSide ){
-			text = `${_currentCalc.leftSide} = ${_currentCalc.rightSide}`
+			text = `${_currentCalc.leftSide} = ${_currentCalc.rightSide} | enter -> clipboard`
 		}
 		Logger.log('[CALC] Modifying text', text)
 		exp.wrapper.text = text

@@ -29,7 +29,7 @@ Database.prototype.init = function( callback ){
 
 Database.prototype.query = function( query, callback ){
 
-	this.DB.all(this.queryStatement, "%" + query + "%", function( err, rows ){
+	this.DB.all(this.queryStatement, "%" + String(query) + "%", function( err, rows ){
 		var results = []
 		if( err ) callback( null )
 		else{
