@@ -38,7 +38,7 @@ let _start = ( main, data, end ) => {
 						if( !err ){
 							databases[ dbType ].push( db )
 						}else{
-							Logger.log('[DB MANAGER] Bad init on Database', file, 'skipping')
+							Logger.log('[DB MANAGER] Bad init on Database', file, 'skipping', err)
 						}
 						cb( null )
 					})

@@ -22,19 +22,19 @@ var exp = {
 		type: '_internal_'
 	}, 
 	regex: [
-		/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i
+		/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]+)?(\/|\/([\da-z\.-]+)?(\?[\da-z\.-_]+\=([\da-z\.-_]+)?(\&[\da-z\.-_]+\=([\da-z\.-_]+)?)?))?$/i
 	]
 }
 
 module.exports = {
 	getRegex: function(){
-      return (exp.regex)?exp.regex[0]:null;
+    return (exp.regex)?exp.regex[0]:null;
   },
   getUserRegex: function(){
-      return (exp.regex && exp.regex.length > 1)?exp.regex[1]:null;
+    return (exp.regex && exp.regex.length > 1)?exp.regex[1]:null;
   },
   getStdRegex: function(){
-      return (exp.regex && exp.regex.length)?exp.regex[0]:null;
+    return (exp.regex && exp.regex.length)?exp.regex[0]:null;
   },
 	getWrapper: function(){
 		return exp;

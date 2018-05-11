@@ -1,11 +1,13 @@
 'use strict';
 
-var _numberRegex = /^([0-9]+(?:\.[0-9]+)?(?:[ ]?[/*+-]+[ ]?[0-9]+(?:\.[0-9]+)?)*)$/
+var { clipboard } = require('electron')
+var _numberRegex = /^([-+\.\/*\d\(\)\s]+)$/
 // make a regex out of the name for searching strings
-var _queryRegex = /^calc ([0-9]+(?:\.[0-9]+)?(?:[ ]?[/*+-]+[ ]?[0-9]+(?:\.[0-9]+)?)*)$/i;
+var _queryRegex = /^calc ([-+\.\/*\d\(\)\s]+)$/i
 var _fn = function( exec, query ){
 
-	Logger.log('[CALC] Not spawnable!')
+	Logger.log('[CALC] Copying calculations to clipboard:', query)
+	clipboard.writeText(query)
 }
 
 var _defaultText = 'Fast math calculations.'
@@ -19,7 +21,7 @@ var exp = {
 	wrapper: {
 		name: 'Calculator',
 		text: _defaultText,
-		exec: '',
+		exec: 'calculator',
 		icon: 'calculator.png',
 		type: '_internal_'
 	},
@@ -28,12 +30,12 @@ var exp = {
 
 if( global.settings.get('shortcuts.calculator') ){
 	// Avoid bad regex
-	var r = global.settings.get('shortcuts.calculator').regex1;
+	var r = global.settings.get('shortcuts.calculator').regex1
 	if( r !== '_unset_' ){
 		// Set default regex (index 0) and name search (index 1),
 		// setting to null avoids default behaviour, 
 		// which goes to the name of the application
-		exp.regex = [ _queryRegex, _numberRegex, r ];
+		exp.regex = [ _queryRegex, _numberRegex, r ]
 	}	
 }
 
@@ -41,14 +43,14 @@ module.exports = {
 	getWrapper: function(){
 		var text = _defaultText
 		if( _currentCalc.leftSide && _currentCalc.rightSide ){
-			text = `${_currentCalc.leftSide} = ${_currentCalc.rightSide}`
+			text = `${_currentCalc.leftSide} = ${_currentCalc.rightSide} | enter -> clipboard`
 		}
 		Logger.log('[CALC] Modifying text', text)
 		exp.wrapper.text = text
-		return exp;
+		return exp
 	},
 	getStdRegex: function(){
-    return (exp.regex && exp.regex.length)?exp.regex[0]:null;
+    return (exp.regex && exp.regex.length) ? exp.regex[0] : null
   },
 	testQuery: function( query ){
 		var allRegex = exp.regex.filter(r => r instanceof RegExp)
@@ -73,6 +75,6 @@ module.exports = {
 				}
 			}
 		}
-		return anyMatch !== null;
+		return anyMatch !== null
 	}
 }

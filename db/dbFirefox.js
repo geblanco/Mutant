@@ -36,8 +36,8 @@ var _init = function( callback ){
 		Logger.log('[FIREFOX DB] found db location', exp.dir)
 	})
 	search.on('close', function( code ){
-		if( code || !exp.dir || exp.dir === '' ){
-			callback( 'ENOENT' )
+		if( !exp.dir || exp.dir === '' ){
+			callback( 'ENOENT ' )
 		}else{
 			callback( null )
 		}
