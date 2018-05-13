@@ -13,82 +13,60 @@ module.exports = function( app ){
     return null
   }
 
-  var name = app.name;
-  var exec = app.exec;
-  var url  = app.url;
-  var icon = app.icon || null;
+  const name = app.name
+  const exec = app.exec
+  const url  = app.url
+  const icon = app.icon || null
 
-  var tpl = `/************** AUTO GENERATED ***************/
+  let tpl = `/************** AUTO GENERATED ***************/
     'use strict';
+    const AppBase = require(global.upath.joinSafe(global.upath.resolve(__dirname, '..'), 'AppBase'))
 
-    var _utils   = global.app.utils;
-    var _url   = '${url}';
+    const _utils   = global.app.utils
+    const _url   = '${url}'
     // make a regex out of the name for searching strings
-    var _queryRegex = /^${name} (\.*)/i;
-    var _fn = function( exec, query ){
+    const _queryRegex = /^${name} (\.*)/i
 
-      var search = null;
-      if( exp.regex ){
-        search = _utils.cleanQuery(exp.regex.filter(r => r !== null), query);
-        if( search ){
-          query = search;
+    const defaultWrapper = {
+      name: 'Open search on ${name}',
+      text: 'Search whatever on ${name}',
+      exec: '${exec}',
+      icon: '${icon}',
+      url: _url,
+      type: '_web_app_'
+    }
+
+    class ${exec} extends AppBase {
+      constructor(options) {
+        super(defaultWrapper)
+        super.mergeOptions(options)
+        this.regex = [_queryRegex]
+
+        if( global.settings.get('shortcuts.${exec}') ){
+          let r = global.settings.get('shortcuts.${exec}').regex1
+          if( r !== '_unset_' ){
+            this.regex.push(r)
+          } 
         }
       }
-      // url can have various values
-      _url.split('|')
-          .map(str => str + (query.split(' ')).join('+'))
-          .forEach(q => _utils.spawn('xdg-open', [q]))
-    }
 
-    var exp = {
-      fn: _fn,
-      wrapper: {
-        name: 'Open search on ${name}',
-        text: 'Search whatever on ${name}',
-        exec: '${exec}',
-        icon: '${icon}',
-        url: _url,
-        type: '_web_app_'
-      },
-      regex: [ _queryRegex, null ]
-    }
-
-    if( global.settings.get('shortcuts.${exec}') ){
-      // Avoid bad regex
-      var r = global.settings.get('shortcuts.${exec}').regex1;
-      if( r !== '_unset_' ){
-        // Set default regex (index 0) and name search (index 1),
-        // setting to null avoids default behaviour, 
-        // which goes to the name of the application
-        exp.regex = [ _queryRegex, r ];
-      } 
-    }
-
-    module.exports = {
-      getRegex: function(){
-        return (exp.regex)?exp.regex:null;
-      },
-      getUserRegex: function(){
-        return (exp.regex && exp.regex.length > 1)?exp.regex[1]:null;
-      },
-      getStdRegex: function(){
-        return (exp.regex && exp.regex.length)?exp.regex[0]:null;
-      },
-      getWrapper: function(){
-        return exp;
-      },
-      testQuery: function( query ){
-        // Search by name regexp and by user custom regex 
-        return exp.regex.filter(r =>{ return r instanceof RegExp }).some(r =>{ return r.test( query ) });
+      exec( ex, query ) {
+        let search = null
+        if( this.regex ){
+          search = _utils.cleanQuery(this.regex.filter(r => r !== null), query)
+          if( search ){
+            query = search
+          }
+        }
+        // url can have various values
+        _url.split('|')
+            .map(str => str + (query.split(' ')).join('+'))
+            .forEach(q => _utils.spawn('xdg-open', [q]))
       }
     }
+
+    module.exports = ${exec}
   `
 
-  return tpl;
-
+  return tpl
 }
-
-
-
-
-

@@ -6,9 +6,10 @@
 
 'use strict';
 
-let _ = require('lodash')
-let _systemApps = require( global.upath.join( __dirname, 'system', 'index' ) )
-let _nativeApps = require( global.upath.join( __dirname, 'native', 'index' ) )
+const { uniqBy } = require('lodash')
+const _systemApps = require( global.upath.join( __dirname, 'system', 'index' ) )
+const _nativeApps = require( global.upath.join( __dirname, 'native', 'index' ) )
+const BrowserHistory = require( global.upath.join( __dirname, 'system', 'BrowserHistory' ) )
 // Apps namespace
 global.app = {
 	utils: require('./appUtils'),
@@ -22,18 +23,13 @@ let _searchBrowserHistory = function( query, callback ){
 		if( err ){
 			return callback( err );
 		}
-		callback( null, _.uniqBy(results, ( a ) => a.title ).map(( result ) => {
-			// Deep copy
-			let aux = _systemApps.getInternalApp('browserHistory')
-			// Come in the form:
-			// url: ...
-			// title: ...
-			// browser: ...
-			aux.name = result.title
-			aux.text = result.url
-			return aux
-		}))
 
+		const ret = uniqBy(results, ( a ) => a.title )
+									.map(( result ) => new BrowserHistory({
+										name: result.title, text: result.url
+									}).getWrapper())
+
+		callback( null, ret )
 	})
 
 }
