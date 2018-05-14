@@ -6,6 +6,7 @@
   "quit": "./Quit",
   "refresh": "./Refresh",
   "calculator": "./Calculator",
+  "preferences": "./Preferences",
   "githubSearch": "./webSearchApp/githubSearch",
   "wikiSearch": "./webSearchApp/wikiSearch",
   "youtubeSearch": "./webSearchApp/youtubeSearch",

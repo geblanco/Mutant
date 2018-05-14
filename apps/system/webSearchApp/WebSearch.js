@@ -225,9 +225,7 @@ class WebSearch extends AppBase {
     callback()
 
     if( this.webApps.length ){
-      this.webApps.forEach( app => {
-        router.send('reloadApplication', app.exec )
-      })
+      router.send('reloadApplications', this.webApps.map(app => app.exec) )
     }
   }
 }

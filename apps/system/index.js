@@ -126,6 +126,13 @@ function _getApps( callback ){
 // ************* Interface ************
 router.on('newAppShortcut', _reloadApplication)
 router.on('reloadApplication', _reloadApplication)
+router.on('reloadApplications', ( apps ) => {
+	if( apps instanceof Array ){
+		for(let app of apps){
+			_reloadApplication(app)
+		}
+	}
+})
 router.get('getAllApps', ( req, res ) => {
 	_getApps(( err, data ) => {
 		//Logger.log('[APP LOADER]', 'getApps', err, data);
