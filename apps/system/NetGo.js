@@ -14,9 +14,9 @@ const defaultWrapper = {
 
 class NetGo extends AppBase {
   constructor(options) {
-    super(defaultWrapper)
-    super.mergeOptions(options)
-    this.regex = matchRegex
+    super(defaultWrapper, options)
+    this.regex = [matchRegex]
+    super.setup()
   }
 
   exec( ex, query ){

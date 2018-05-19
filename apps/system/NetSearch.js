@@ -12,8 +12,8 @@ const defaultWrapper = {
 
 class NetSearch extends AppBase {
   constructor(options) {
-    super(defaultWrapper)
-    super.mergeOptions(options)
+    super(defaultWrapper, options)
+    super.setup()
   }
 
   exec( ex, query ){

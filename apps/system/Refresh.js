@@ -13,12 +13,9 @@ const defaultWrapper = {
 
 class Refresh extends AppBase {
   constructor(options) {
-    super(defaultWrapper)
-    super.mergeOptions(options)
-    this.regex = /REFRESH/i
-    if( global.settings.get('shortcuts.RefreshApps') ){
-      exp.regex.push(global.settings.get('shortcuts.RefreshApps'))
-    }
+    super(defaultWrapper, options)
+    this.regex = [/REFRESH/i]
+    super.setup()
   }
 
   exec( ex, query ){

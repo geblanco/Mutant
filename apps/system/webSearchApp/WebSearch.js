@@ -78,10 +78,10 @@ const defaultWrapper = {
 
 class WebSearch extends AppBase {
   constructor(options) {
-    super(defaultWrapper)
-    super.mergeOptions(options)
+    super(defaultWrapper, options)
+    super.setup()
     this.appIndex = require(indexPath)
-    this.firstTime = false
+    this.firstTime = true
     this.webApps = []
     this._registerEvents()
   }
@@ -90,12 +90,12 @@ class WebSearch extends AppBase {
     // Check index
     if( !this.appIndex.hasOwnProperty( app.exec ) ){
       // save as relative path, resolved on load
-      this.appIndex[ app.exec ] = global.upath.joinSafe('./webSearchApp', app.exec)
+      this.appIndex[ app.exec ] = global.upath.joinSafe('webSearchApp', app.exec)
     }
 
     // Check shortcut
-    if( global.settings.get(`shortcut.${app.exec}`) ){
-      app['shortcut'] = global.settings.get(`shortcut.${app.exec}`)
+    if( global.settings.get(`shortcut.${app.exec}.regex1`) ){
+      app['shortcut'] = global.settings.get(`shortcut.${app.exec}.regex1`)
     }
 
     // TODO => Review array data per application, later, on appRetrieval, other data maybe requested
@@ -186,12 +186,11 @@ class WebSearch extends AppBase {
           // If the app exists, check the index, update acordingly
           // Else, create template, write file, check the index, update acordingly
           // Check exists
-          exists( global.upath.joinSafe(__dirname, '/', `${app.exec}.js`), ( exists, stat ) => {
-
+          exists( global.upath.joinSafe(__dirname, `${app.exec}.js`), ( exists, stat ) => {
+            Logger.log('[WEBSEARCHAPP]', app.exec, exists)
             if( exists ){
               app.hasFile = true
               this._addWebApp( app )
-              created++
               callback()
             }else{
               this._createWebApp( app, ( err, added ) => {
@@ -207,7 +206,7 @@ class WebSearch extends AppBase {
         }, callback)
       }
     ], ( err, result ) => {
-      this.firstTime = (created === 0)
+      this.firstTime = (created > 0)
       if( created > 0 ){
         this._dumpIndex( callback )
       }else{
@@ -217,15 +216,16 @@ class WebSearch extends AppBase {
   }
 
   shouldReload() {
-    return !this.firstTime
+    return this.firstTime
   }
 
   postLoad( callback ) {
 
     callback()
-
-    if( this.webApps.length ){
-      router.send('reloadApplications', this.webApps.map(app => app.exec) )
+    if( this.firstTime ){
+      if( this.webApps.length ){
+        router.send('reloadApplications', this.webApps.map(app => app.exec) )
+      }
     }
   }
 }

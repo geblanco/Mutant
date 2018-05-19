@@ -3,15 +3,33 @@
 const properties = ['name', 'text', 'exec', 'icon', 'type']
 
 class AppBase {
-  constructor(options) {
+  constructor(options, overLoadOptions) {
     if( !this._checkProperties(options) ){
       throw new Error('Bad app instantiation', options)
     }
     this.wrapper = {}
-    for(let prop of properties){
-      this.wrapper[prop] = options[prop]
+    this._mergeOptions(options)
+    this._mergeOptions(overLoadOptions)
+    this.regex = [/^(\?)$/]
+  }
+
+  _observe() {
+    if( this.observer && this.observer.dispose ){
+      // just one observer
+      this.observer.dispose()
     }
-    this.regex = /^(\?)$/
+    return global.settings.watch(`shortcuts.${this.wrapper.exec}.regex1`, this._addRegex.bind(this))
+  }
+
+  _addRegex(newValue, oldValue) {
+    if( !this.regex instanceof Array ){
+      this.regex = [this.regex]
+    }
+    let idx = this.regex.indexOf(oldValue)
+    if( idx !== -1 ){
+      this.regex.splice(idx, 1)
+    }
+    this.regex.push(newValue)
   }
 
   _checkProperties(options) {
@@ -28,12 +46,26 @@ class AppBase {
     return ret
   }
 
-  mergeOptions(options) {
+  _mergeOptions(options) {
     if( options instanceof Object ){
       for(let prop in options){
         this.wrapper[prop] = options[prop]
       }
     }
+  }
+
+  mergeOptions(options) {
+    this._mergeOptions(options)
+    // just in case...
+    this.observer = this._observe()
+  }
+
+  setup() {
+    let r = global.settings.get(`shortcuts.${this.wrapper.exec}.regex1`)
+    if( r !== undefined && r !== '_unset_' ){
+      this._addRegex(r, null)
+    }
+    this.observer = this._observe()
   }
 
   getWrapper() {

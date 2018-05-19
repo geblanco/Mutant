@@ -38,16 +38,9 @@ module.exports = function( app ){
 
     class ${exec} extends AppBase {
       constructor(options) {
-        super(defaultWrapper)
-        super.mergeOptions(options)
+        super(defaultWrapper, options)
         this.regex = [_queryRegex]
-
-        if( global.settings.get('shortcuts.${exec}') ){
-          let r = global.settings.get('shortcuts.${exec}').regex1
-          if( r !== '_unset_' ){
-            this.regex.push(r)
-          } 
-        }
+        super.setup()
       }
 
       exec( ex, query ) {

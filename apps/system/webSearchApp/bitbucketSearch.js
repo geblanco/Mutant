@@ -18,16 +18,9 @@
 
     class bitbucketSearch extends AppBase {
       constructor(options) {
-        super(defaultWrapper)
-        super.mergeOptions(options)
+        super(defaultWrapper, options)
         this.regex = [_queryRegex]
-
-        if( global.settings.get('shortcuts.bitbucketSearch') ){
-          let r = global.settings.get('shortcuts.bitbucketSearch').regex1
-          if( r !== '_unset_' ){
-            this.regex.push(r)
-          } 
-        }
+        super.setup()
       }
 
       exec( ex, query ) {

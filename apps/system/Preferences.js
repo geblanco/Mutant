@@ -28,9 +28,9 @@ const windowSettings = {
 
 class Preferences extends AppBase {
   constructor(options) {
-    super(defaultWrapper)
-    super.mergeOptions(options)
-    this.regex = [/preference/i]
+    super(defaultWrapper, options)
+    this.regex = [/preferences/i]
+    super.setup()
     this.router = Router('PREFERENCES')
     this.window = null
   }
@@ -93,7 +93,7 @@ class Preferences extends AppBase {
       }
 
       this._updateAppRegex( _app, reg, ( err ) => {
-        global.Logger.log('[PREFERENCES APP]', 'updateRegex', 3, 'saved', err, `shortcuts.${_app.exec}`, { type: _app.type, regex1: reg })
+        global.Logger.log('[PREFERENCES APP]', 'updateRegex', 3, 'saved err', err, `shortcuts.${_app.exec}`, { type: _app.type, regex1: reg })
         if( !err ){
           global.settings.set(`shortcuts.${_app.exec}`, { type: _app.type, regex1: reg })
           toReload.push( _app.exec )
@@ -115,6 +115,7 @@ class Preferences extends AppBase {
     // query main db for saving new shortcut
     let db = global.db.getMainDB()
     db.findOne({ type: app.type, exec: app.exec }, ( err, doc ) => {
+      global.Logger.log('[PREFERENCES APP]', 'query', app, reg)
       global.Logger.log('[PREFERENCES APP]', 'query', app.type, app.exec, 'retrieve', doc, doc.regex1)
       if( err ){
         return callback( err )

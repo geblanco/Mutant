@@ -18,16 +18,9 @@
 
     class githubSearch extends AppBase {
       constructor(options) {
-        super(defaultWrapper)
-        super.mergeOptions(options)
+        super(defaultWrapper, options)
         this.regex = [_queryRegex]
-
-        if( global.settings.get('shortcuts.githubSearch') ){
-          let r = global.settings.get('shortcuts.githubSearch').regex1
-          if( r !== '_unset_' ){
-            this.regex.push(r)
-          } 
-        }
+        super.setup()
       }
 
       exec( ex, query ) {

@@ -13,13 +13,9 @@ const defaultWrapper = {
 
 class Quit extends AppBase {
   constructor(options) {
-    super(defaultWrapper)
-    super.mergeOptions(options)
+    super(defaultWrapper, options)
     this.regex = [ /QUIT/i ]
-
-    if( global.settings.get('shortcuts.Quit') ){
-      this.regex.push(global.settings.get('shortcuts.Quit'))
-    }
+    super.setup()
   }
 
   exec( ex, query ){

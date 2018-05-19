@@ -36,7 +36,7 @@ let _prettyDate = () => {
 
 let Logger = function( baseDir, filter ){
   // Ensure dir and exists
-  baseDir = baseDir || `${util.getBasePath()}/log`
+  baseDir = baseDir || `${util.getConfigPath()}/log`
   mkdir.sync( baseDir )
   // Setup filter
   this.filterStr = filter || '*'

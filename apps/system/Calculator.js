@@ -17,19 +17,12 @@ const defaultWrapper = {
 
 class Calculator extends AppBase {
   constructor(options) {
-    super(defaultWrapper)
-    super.mergeOptions(options)
+    super(defaultWrapper, options)
     this.regex = [_queryRegex, _numberRegex]
+    super.setup()
     this.currentCalc = {
       leftSide: null,
       rightSide: null
-    }
-
-    if( global.settings.get('shortcuts.calculator') ){
-      const r = global.settings.get('shortcuts.calculator').regex1
-      if( r !== '_unset_' ){
-        this.regex.push(r)
-      } 
     }
   }
 

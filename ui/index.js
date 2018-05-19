@@ -25,7 +25,7 @@ let windowParams  = {
 }
 
 // ******** WINDOW HANDLES *********
-let _requestSize = function( noElems, size ){
+function _requestSize( noElems, size ){
   //Logger.log('requestSize', 1, arguments)
   Logger.log('[UI MAIN WINDOW] Requested size change', noElems, size)
   let dim = mainWindow.getContentSize()
@@ -35,7 +35,7 @@ let _requestSize = function( noElems, size ){
 // *********************************
 
 // ******** VISUAL HANDLES *********
-let _showWindow = function(){
+function _showWindow(){
   // Locate display mouse
   let displ = screen.getDisplayNearestPoint( screen.getCursorScreenPoint() );
   // Get dimensions
@@ -58,20 +58,20 @@ let _showWindow = function(){
   mainWindow.focus();
 }
 
-let _handleShortcut = function( evt ){
-  //Logger.log('Handle', evt);
-  function _shut(){
-    //Logger.log('_shut');
-    if( mainWindow.isVisible() ){
-      //Logger.log('InVisible');
-      mainWindow.hide();
-      mainWindow.send('halt');
-    }
-    if( globalShortcut.isRegistered('Esc') ){
-      globalShortcut.unregister('Esc');
-    }
-    router.send('UI::hide');
+function _shut(){
+  //Logger.log('_shut');
+  if( mainWindow.isVisible() ){
+    //Logger.log('InVisible');
+    mainWindow.hide();
+    mainWindow.send('halt');
   }
+  if( globalShortcut.isRegistered('Esc') ){
+    globalShortcut.unregister('Esc');
+  }
+  router.send('UI::hide');
+}
+
+function _handleShortcut( evt ){
   if( evt === 'TOGGLE' ){
     //Logger.log('TOGGLE');
     if( mainWindow.isVisible() ){
@@ -92,7 +92,7 @@ let _handleShortcut = function( evt ){
 // *********************************
 
 // ************* SETUP *************
-let _createWindow = function(){
+function _createWindow(){
   // General Setup
   screen = electron.screen;
   Logger.log('[UI MAIN WINDOW] Create window');
@@ -120,12 +120,13 @@ let _createWindow = function(){
 
   // Load the main window.
   Logger.log('[UI MAIN WINDOW] Load index');
-  mainWindow.loadURL('file://' + upath.join( __dirname, 'html/index.html' ));
+  mainWindow.loadURL('file://' + global.upath.joinSafe( __dirname, 'html/index.html' ));
   // mainWindow.openDevTools();  
 }
 
-let _registerShortcutEvents = function(){
-  let launchShortcut = settings.get('shortcuts')['launch'].cmd;
+function _registerShortcutEvents(){
+  console.log('[UI MAIN WINDOW]', global.settings.get('shortcuts'))
+  let launchShortcut = global.settings.get('shortcuts')['launch'].cmd;
   // Register shortcut
   Logger.log('[UI MAIN WINDOW] Register shortcut 1/2');
   let reg = globalShortcut.register( launchShortcut, () => { _handleShortcut('TOGGLE') });
@@ -136,7 +137,7 @@ let _registerShortcutEvents = function(){
   if(!reg) Logger.log('[UI MAIN WINDOW] Failed registering Esc')
 }
 
-let _registerWindowClose = function( callback ){
+function _registerWindowClose( callback ){
   mainWindow.on('blur', _handleShortcut);
   Logger.log('[UI MAIN WINDOW] Register close 1/2');
   let closeTries = 0;
@@ -150,7 +151,7 @@ let _registerWindowClose = function( callback ){
   mainWindow.on('closed', callback);
 }
 
-let _registerWindowEvents = function( callback ){
+function _registerWindowEvents( callback ){
   // Setup bindings for duplex communication.
   // Pass a function to the bridge so that it can call it when it needs anything,
   // by now just hide and quit
@@ -164,10 +165,10 @@ let _registerWindowEvents = function( callback ){
 
   router.on('requestSize', _requestSize );
 
-  router.on('launch', ( app ) => {
-    Logger.log('[UI MAIN WINDOW] launch', app.name);
+  router.on('launch', ( data ) => {
+    Logger.log('[UI MAIN WINDOW] launch', data.app.name);
     router.send('hide');
-    router.send('launchApp', app)
+    router.send('launchApp', data)
   })
 
   router.on('hide', () => {
@@ -179,10 +180,9 @@ let _registerWindowEvents = function( callback ){
     Logger.log('[UI MAIN WINDOW] Received `quit` evt')
     callback()
   });
-
 }
 
-let _registerEvents = function( callback ){ 
+function _registerEvents( callback ){ 
   let cb = callback
   // Register evts and shortcuts
   _registerShortcutEvents();
@@ -201,12 +201,12 @@ let _registerEvents = function( callback ){
 }
 // *********************************
 
-let _main = function( callback ) {
+function _main( callback ) {
   _createWindow();
   _registerEvents( callback );
 }
 
-let _ready = function( elApp, callback ){
+function _ready( elApp, callback ){
   Logger.log('[UI MAIN WINDOW] Start');
   // Quit when all windows are closed.
   app = elApp;
@@ -222,17 +222,20 @@ let _ready = function( elApp, callback ){
   })
 }
 
-let _clean = function( callback ){
-  Logger.log('[UI MAIN WINDOW] Quit evt');
+function _clean( callback ){
+  Logger.log('[UI MAIN WINDOW] Quit evt')
   // mainWindow.removeAllListeners();
   // ipc.removeAllListeners();
   // globalShortcut.unregisterAll();
-  Logger.log('[UI MAIN WINDOW] Killing window');
+  Logger.log('[UI MAIN WINDOW] Killing window')
   // mainWindow = null;
-  callback();
+  if( typeof callback !== 'function' ){
+    callback = () => {}
+  }
+  callback()
 }
 
-let _singleton = function(){
+function _singleton(){
   // Someone tried to run a second instance, we should focus our window.
   Logger.log('[UI MAIN WINDOW] ShouldQuit, an instance is already running')
   if( mainWindow ){
