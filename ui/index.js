@@ -125,7 +125,6 @@ function _createWindow(){
 }
 
 function _registerShortcutEvents(){
-  console.log('[UI MAIN WINDOW]', global.settings.get('shortcuts'))
   let launchShortcut = global.settings.get('shortcuts')['launch'].cmd;
   // Register shortcut
   Logger.log('[UI MAIN WINDOW] Register shortcut 1/2');
