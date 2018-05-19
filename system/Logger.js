@@ -1,74 +1,76 @@
 'use strict'
 
-const fs = require('fs')
 const mkdir = require('mkdirp')
-const utils = require( __dirname + '/utils' )
+const utils = require( global.upath.joinSafe(__dirname, 'utils') )
+const { existsSync, createWriteStream } = require('fs')
+
 const extractor = /^\[(.*)\]/
+const marker = '\n\n================ START ================\n'
 
-let _pickUntakenName = ( baseDir ) => {
-  let dir = null
-  if( baseDir ){
-    let today = (new Date().toLocaleDateString()).replace(/\//g, '-')
-    let tries = 0
-    let dotExt = '.log'
-    dir = `${baseDir}/${today}${dotExt}`
-    while( fs.existsSync( `${dir}` )) dir = `${baseDir}/${today} (${++tries})${dotExt}`
-  }else{
-    console.log('[LOGGER] Err -> Could not find config path')
+class Logger {
+  constructor(baseDir, filter) {
+    // Ensure dir and exists
+    baseDir = baseDir || `${util.getConfigPath()}/log`
+    mkdir.sync( baseDir )
+    // Setup filter
+    this.filterStr = filter || '*'
+    // Ensure log name
+    this.logFile = this._pickName( baseDir )
+    if( this.logFile ){
+      let streamer = createWriteStream(this.logFile, { flags: 'a' })
+      this.ownLogger = new console.Console( streamer, streamer )
+    }else{
+      // Dummy object, just in case...
+      this.ownLogger = { log: () => { console.log('[LOGGER] ERR: NO_LOG_DIR') } }
+    }
+    this.ownLogger.log(marker)
   }
-  return dir
-}
 
-let _prettyDate = () => {
-  let date = new Date()
-  let ret = `${date.getHours()}`
-  if( date.getHours() < 100 ){
-    ret = `0${date.getHours()}`
+  _prettyDate() {
+    let date = new Date()
+    let hours = `${date.getHours()}`
+    let minutes = `${date.getMinutes()}`
+    let seconds = `${date.getSeconds()}`
+    let millis = `${date.getMilliseconds()}`
+    if( hours < 10 ){
+      hours = `0${date.getHours()}`
+    }
+    if( minutes < 10 ){
+      minutes = `0${date.getMinutes()}`
+    }
+    if( seconds < 10 ){
+      seconds = `0${date.getSeconds()}`
+    }
+    if( millis < 100 ){
+      millis = `0${date.getMilliseconds()}`
+    }
+    return `[${hours}:${minutes}:${seconds}.${millis}]`
   }
-  ret += `:${date.getMinutes()}`
-  if( date.getMilliseconds() < 100 ){
-    ret += `:0${date.getMilliseconds()}`
-  }else{
-    ret += `:${date.getMilliseconds()}`
-  }
-  return `[${ret}]`
-}
 
-let Logger = function( baseDir, filter ){
-  // Ensure dir and exists
-  baseDir = baseDir || `${util.getConfigPath()}/log`
-  mkdir.sync( baseDir )
-  // Setup filter
-  this.filterStr = filter || '*'
-  // Ensure log name
-  this.logDir = _pickUntakenName( baseDir )
-  if( this.logDir ){
-    let streamer = fs.createWriteStream( this.logDir )
-    this.ownLogger = new console.Console( streamer, streamer )
-  }else{
-    // Dummy object, just in case...
-    this.ownLogger = { log: ()=>{ console.log('[LOGGER] ERR: NO_LOG_DIR') } }
+  _pickName( baseDir ) {
+    let today = (new Date().toLocaleDateString()).replace(/\//g, '_')
+    return `${baseDir}/${today}.log`
   }
-}
 
-Logger.prototype.log = function(){
-  let args = [ _prettyDate() ].concat( Array.prototype.slice.call( arguments, 0 ) )
-  // console.log.apply( console, ['[LOGGER CALLED]'].concat( args ) )
-  if( this.filterInput( args[ 0 ] ) ){
-    console.log.apply( console, args )
-    this.ownLogger.log.apply( this.ownLogger, args )
-  }
-}
-
-Logger.prototype.filterInput = function( str ){
-  let ret = true
-  if( this.filterStr !== '*' ){
-    let source = str.match( extractor )
-    if( !source || this.filterStr.toLowerCase() !== source[ 1 ].toLowerCase() ){
-      ret = false
+  log() {
+    let args = [ this._prettyDate() ].concat( Array.prototype.slice.call( arguments, 0 ) )
+    // console.log.apply( console, ['[LOGGER CALLED]'].concat( args ) )
+    if( this.filterInput( args[ 0 ] ) ){
+      console.log.apply( console, args )
+      this.ownLogger.log.apply( this.ownLogger, args )
     }
   }
-  return ret
+
+  filterInput( str ) {
+    let ret = true
+    if( this.filterStr !== '*' ){
+      let source = str.match( extractor )
+      if( !source || this.filterStr.toLowerCase() !== source[ 1 ].toLowerCase() ){
+        ret = false
+      }
+    }
+    return ret
+  }
 }
 
 module.exports.Logger = ( baseDir, filter ) => new Logger( baseDir, filter )
