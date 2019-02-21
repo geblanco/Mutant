@@ -1,39 +1,43 @@
 'use strict'
 
+const mainApp  = require('electron').app
+
+mainApp.on('ready', () => {
+
 // Entry point, set globals
 // DEPS
+// DECLS{ upath }
+  global.upath  = require('upath')
 // Load utils
-  const util = require( __dirname + '/system/utils' )
+  const util = require( upath.joinSafe(__dirname, '/system/utils' ) )
 // DECLS{ progOpts, DIRS, upath, async, Logger, settings }
   global.progOpts = Array.prototype.slice.call( process.argv, 2 )
-  global.upath  = require('upath')
-  global.settings = (() => { let s = require('electron-settings'); return new s({debouncedSaveTime: 1}) })()
-  global.async  = require( __dirname + '/async' )
+  global.settings = require('electron-settings')
+  global.async  = require( upath.joinSafe(__dirname, 'async' ) )
   global.router = require('electron-router')('MAIN')
   global.DIRS = {
-    DB: upath.join( util.getBasePath(), 'database' ),
-    LOG: upath.join( util.getBasePath(), 'log' ),
+    DB: upath.join( util.getConfigPath(), 'database' ),
+    LOG: upath.join( util.getConfigPath(), 'log' ),
     APPS: upath.join( util.getConfigPath(), 'apps' ),
     INTERNAL_ROOT: __dirname
   }
-  global.Logger = require( __dirname + '/system/Logger' ).Logger( global.DIRS.LOG, '*' )
+  global.Logger = require( upath.joinSafe(__dirname, '/system/Logger' ) ).Logger( global.DIRS.LOG, '*' )
   global.settings.on('save', function(){ Logger.log('[GLOBAL SETTINGS]', 'SAVE ->', arguments) })
   global.settings.on('err', function(){ Logger.log('[GLOBAL SETTINGS]', 'ERR ->', arguments) })
 
 // Save refs
-  const db   = require( __dirname + '/db/db' )
-  const UI   = require( __dirname + '/ui/index')
-  const apps = require( __dirname + '/apps/index' )
-  const mainApp  = require('electron').app
-  let appReady = false
-  mainApp.on('ready', () => { appReady = true })
+  const db   = require( upath.joinSafe(__dirname, '/db/db' ) )
+  const UI   = require( upath.joinSafe(__dirname, '/ui/index') )
+  const apps = require( upath.joinSafe(__dirname, '/apps/index' ) )
 
 // Allow only one instance
-  const shouldQuit = mainApp.makeSingleInstance( UI.handleSingleton )
-  if( shouldQuit ){ mainApp.quit(); return; }
+  if( !mainApp.requestSingleInstanceLock() ){
+    UI.handleSingleton()
+    mainApp.quit()
+    return
+  }
 
-// Handle Interruption
-  process.on('SIGINT', () => { Logger.log('SIGINT'); UI.end(); });
+  mainApp.on('second-instance', UI.handleSingleton)
 
 // Start working
   global.async.waterfall([
@@ -41,7 +45,7 @@
     ( callback ) => {
 
       let localSettings = require( upath.join(__dirname, 'misc', 'settings.json') )
-      if( Object.keys( settings.get() ).length === 0 ){
+      if( Object.keys( settings.getAll() ).length <= 2 ){
         // First launch
         // TODO => default config for rsvg
         // default theme
@@ -68,6 +72,10 @@
       mkdir.sync( upath.join( DIRS.APPS, 'system' ) )
       mkdir.sync( upath.join( DIRS.APPS, 'native' ) )
 
+      Logger.log('[MAIN] Created dir', DIRS.DB)
+      Logger.log('[MAIN] Created dir', DIRS.APPS + '/system')
+      Logger.log('[MAIN] Created dir', DIRS.APPS + '/native')
+
       callback( null, localSettings )
 
     },
@@ -85,14 +93,12 @@
       async.parallel([
         // User Interface start
         ( callback ) => {
-          if( appReady ){
-            UI.start( mainApp, callback )
-          }else{
-            mainApp.on('ready', () => {
-              appReady = true
-              UI.start( mainApp, callback )
-            })
-          }
+          // Handle Interruption
+          process.on('SIGINT', () => {
+            Logger.log('SIGINT')
+            router.send('quit')
+          })
+          UI.start( mainApp, callback )
         },
         // Applications modules start
         ( callback ) => {
@@ -120,3 +126,4 @@
     result = result || 'OK'
     Logger.log('[MAIN] End ->', err ? err : result )
   })
+})

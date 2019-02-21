@@ -20,7 +20,7 @@ const GTK_ICON_LOOKUP_FORCE_SIZE = 16;
 const GTK_ICON_LOOKUP_USE_BUILTIN = 4;
 const GTK_ICON_LOOKUP_NO_SVG = 1;
 
-var processApp = function( dstDir, app, callback ){
+function _processApp( dstDir, app, callback ){
 
   if( app.icon !== '__unknown__' ){
     // Check svg
@@ -68,7 +68,7 @@ var processApp = function( dstDir, app, callback ){
   }
 }
 
-var dumpApps = function( file, apps, callback ){
+function _dumpApps( file, apps, callback ){
   Logger.log(`[NATIVE APPS] Found -> ${apps.length} apps`)
   Logger.log(`[NATIVE APPS] Saving to -> ${file}`)
   fs.writeFile( file, JSON.stringify(apps, null, 4), ( err ) => {
@@ -80,7 +80,7 @@ var dumpApps = function( file, apps, callback ){
   })
 }
 
-var cacheFiles = function( cmd, callback ){
+function _cacheFiles( cmd, callback ){
 
   var args = [ appsFile ];
   if( cmd.trim() !== '' ){
@@ -114,17 +114,17 @@ var cacheFiles = function( cmd, callback ){
 
       if( global.progOpts.indexOf('--noSvg') !== -1 ){
 
-        dumpApps( appsFile, apps, callback );
+        _dumpApps( appsFile, apps, callback );
 
       }else{
 
         global.async.map(apps, ( app, callback ) => {
 
-          processApp( dstDir, app, callback );
+          _processApp( dstDir, app, callback );
 
         }, function( err, apps ){
           //Logger.log('done processing', 'changes', changes, arguments);
-          dumpApps( appsFile, apps, callback );
+          _dumpApps( appsFile, apps, callback );
         })
 
       }
@@ -134,14 +134,14 @@ var cacheFiles = function( cmd, callback ){
   })
 }
 
-var cacheAndUpdate = function( firstTime, callback ){
+function _cacheAndUpdate( firstTime, callback ){
 
   // If its not first time, apps are yet on cache, callback => list => update cache => update db
   // Else, list => cache => callback => save db
   if( !firstTime ) callback()
 
   // List apps
-  cacheFiles( global.settings.get('theme'), ( err, apps ) => {
+  _cacheFiles( global.settings.get('theme'), ( err, apps ) => {
     if( err ){
       Logger.log('[NATIVE APPS] Error listing apps', err)
       if( firstTime ) callback( err )
@@ -196,7 +196,7 @@ var cacheAndUpdate = function( firstTime, callback ){
   })
 }
 
-var _start = function( callback ){
+function _start( callback ){
 
   global.db.getMainDB().find({ type: '_native_' }, ( err, docs ) => {
     //Logger.log('[NATIVE APPS]', 'from DB', err, docs);
@@ -210,17 +210,16 @@ var _start = function( callback ){
     }
 
     // callback( null )
-    cacheAndUpdate( !(!!docs.length), callback )
+    _cacheAndUpdate( !(!!docs.length), callback )
 
   })
 }
 
-var _searchApp = function( query, callback ){
+function _searchApp( query, callback ){
 
   return nativeApps.filter(( app ) => {
     return ( global.app.utils.strSearch( app.name, query ) !== -1 );
   })
-
 }
 
 module.exports = {

@@ -1,15 +1,15 @@
 {
-    "preference": "./preferenceApp",
-    "netGo": "./netGoApp",
-    "netSearch": "./netSearchApp",
-    "browserHistory": "./browserHistoryApp",
-    "quit": "./quitApp",
-    "refresh": "./refreshApp",
-    "calculator": "./calculatorApp",
-    "webSearch": "./webSearchApp/webSearchApp",
-    "bitbucketSearch": "./webSearchApp/bitbucketSearch",
-    "githubSearch": "./webSearchApp/githubSearch",
-    "wikiSearch": "./webSearchApp/wikiSearch",
-    "youtubeSearch": "./webSearchApp/youtubeSearch",
-    "aurSearch": "./webSearchApp/aurSearch"
+  "webSearch": "./webSearchApp/WebSearch",
+  "netGo": "./NetGo",
+  "netSearch": "./NetSearch",
+  "browserHistory": "./BrowserHistory",
+  "quit": "./Quit",
+  "refresh": "./Refresh",
+  "calculator": "./Calculator",
+  "preferences": "./Preferences",
+  "githubSearch": "webSearchApp/githubSearch",
+  "wikiSearch": "webSearchApp/wikiSearch",
+  "youtubeSearch": "webSearchApp/youtubeSearch",
+  "bitbucketSearch": "webSearchApp/bitbucketSearch",
+  "aurSearch": "webSearchApp/aurSearch"
 }
