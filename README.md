@@ -22,16 +22,10 @@ Get in the project dir
 cd mutant
 ```
 
-Source the necessary variables (electron dependant)
+Run npm installation under electron runtime
 
 ```bash
-source install/envVars.sh
-```
-
-Install node modules
-
-```bash
-npm i
+npm run install-for-electron
 ```
 
 Launch app
