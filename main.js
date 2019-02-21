@@ -31,8 +31,13 @@ mainApp.on('ready', () => {
   const apps = require( upath.joinSafe(__dirname, '/apps/index' ) )
 
 // Allow only one instance
-  const shouldQuit = mainApp.makeSingleInstance( UI.handleSingleton )
-  if( shouldQuit ){ mainApp.quit(); return; }
+  if( !mainApp.requestSingleInstanceLock() ){
+    UI.handleSingleton()
+    mainApp.quit()
+    return
+  }
+
+  mainApp.on('second-instance', UI.handleSingleton)
 
 // Start working
   global.async.waterfall([
@@ -91,7 +96,7 @@ mainApp.on('ready', () => {
           // Handle Interruption
           process.on('SIGINT', () => {
             Logger.log('SIGINT')
-            UI.end( callback )
+            router.send('quit')
           })
           UI.start( mainApp, callback )
         },
