@@ -49,3 +49,4 @@ tests
 # Distro files
 *.desktop
 PKGBUILD*
+dist

@@ -39,7 +39,7 @@
     "electron-rebuild": "^1.6.0"
   },
   "scripts": {
-    "preinstall": "./install/envVars.sh",
+    "install-for-electron": "./install/envVars.sh && npm i",
     "postinstall": "./install/gtkcc.sh ./install/listApps && mv ./install/listApps ./apps/native/listApps",
     "dist": "./install/mkDist.sh ./"
   }
