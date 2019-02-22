@@ -3,9 +3,7 @@
 	"theme": "Menda-Circle",
 	"dbDir": "database",
 	"dbMain": "dbMain",
-	"dbs": {
-		"browsers": ["dbChrome", "dbChromium", "dbFirefox"]
-	},
+	"browsers": ["firefox", "chrome"],
 	"shortcuts": {
 		"launch": {
 			"cmd": "Ctrl+Space",

@@ -18,7 +18,7 @@ global.app = {
 
 function _searchBrowserHistory( query, callback ){
   
-  global.db.query('browsers', query, ( err, results ) => {
+  global.db.getBrowsersDB().query(query, ( err, results ) => {
 
     if( err ){
       return callback( err );

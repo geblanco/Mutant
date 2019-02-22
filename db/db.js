@@ -7,11 +7,14 @@
 // Dependencies
 const _ 		  = require('lodash')
 const fs 		  = require('fs')
+const BrowsersDB = require('browsers-db')
+
 let databases = {}
+let browsersDB = null
 let mainDb = { name: 'dbMain', query: (q,cb)=>{cb()} }
 let unresolved = []
 
-let _start = ( main, data, end ) => {
+let _start = ( main, browsers, end ) => {
 	async.parallel([
 		// Load Main db
 		( callback ) => {
@@ -28,24 +31,8 @@ let _start = ( main, data, end ) => {
 		},
 		// Load the rest
 		( callback ) => {
-			async.each( Object.keys(data), ( dbType, cb ) => {
-
-				databases[ dbType ] = []
-				async.each( data[dbType], ( file, cb ) => {
-
-					let d = require( upath.join( __dirname, file ) )
-					d.init((err, db) => {
-						if( !err ){
-							databases[ dbType ].push( db )
-						}else{
-							Logger.log('[DB MANAGER] Bad init on Database', file, 'skipping', err)
-						}
-						cb( null )
-					})
-
-				}, cb )
-
-			}, callback )
+			browsersDB = new BrowsersDB(browsers)
+			browsersDB.start(callback)
 		}
 	], ( err ) => { if( !err ) router.send('ready::DB') })
 }
@@ -111,20 +98,13 @@ let _query = function( db, query, callback ){
 
 let _shutdown = function( callback ){
 	Logger.log('[DB MAIN] db shutdown')
-	let err = null
-	async.each( Object.keys( databases ), ( type, cb ) => {
-		async.each( databases[ type ], ( db, cb ) => {
-			
-			db.DB.close()
-			cb()
-
-		}, cb )
-	}, callback )
+	browsersDB.shutdown(callback)
 }
 
 module.exports = {
 	start: _start,
 	query: _query,
+	getBrowsersDB: () => { return browsersDB },
 	getMainDB: () => { return mainDb },
 	shutdown: _shutdown
 }

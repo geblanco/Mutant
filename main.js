@@ -82,7 +82,7 @@ mainApp.on('ready', () => {
     // Start DB
     ( localSettings, callback ) => {
 
-      db.start( localSettings['dbMain'], localSettings['dbs'], callback )
+      db.start( localSettings['dbMain'], localSettings['browsers'], callback )
 
     },
     // Start UI, Apps - Main Program
