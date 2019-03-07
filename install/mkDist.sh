@@ -24,7 +24,6 @@ version=$(node -p "require('../package.json').version")
   --arch=x64 \
   --electron-version=$(electron -v | cut -c 2-) \
   --prune \
-  --ignore=".git" \
   --ignore=".gitignore" \
   --ignore="install" \
   --ignore="Model.md" \
