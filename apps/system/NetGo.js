@@ -3,7 +3,7 @@
 const AppBase = require(global.upath.joinSafe(__dirname, 'AppBase'))
 
 const matchRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]+)?(\/|\/([\da-z\.-]+)?(\?[\da-z\.-_]+\=([\da-z\.-_]+)?(\&[\da-z\.-_]+\=([\da-z\.-_]+)?)?))?$/i
-const http = /((http|ftp|https)\:\/\/)/i
+const httpReg = /((http|ftp|https)\:\/\/)/i
 const defaultWrapper = {
   name: 'Open Url',
   text: 'Open given Url',
