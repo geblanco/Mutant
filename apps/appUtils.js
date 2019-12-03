@@ -4,25 +4,29 @@
 
 'use strict'
 
-var spawn = require('child_process').spawn;
+const { spawn, exec } = require('child_process');
 
 // Export
 module.exports.spawn = function( cmd, opts, cwd ){
   if( !cmd ){
     throw new Error('Spawner fucked up');
   }
-  if( !opts ){
-    opts = [];
-  }else if( !(opts instanceof Array) ){
-    opts = [opts];
-  }
-  Logger.log('[UTILS] Spawning', cmd, 'with options', opts);
-  var child = spawn(cmd, opts, {
+  var child = null
+  var childOpts = {
     detached: true,
     stdio: [ 'ignore', 'ignore', 'ignore' ],
     cwd: cwd?cwd:process.cwd()
-  });
-  child.unref();
+  }
+  if (opts !== undefined && !(opts instanceof Array) ){
+    opts = [opts]
+  }
+  Logger.log('[UTILS] Spawning', cmd, 'with options', opts)
+  if( opts === undefined ){
+    child = exec(cmd, childOpts)
+  }else{
+    child = spawn(cmd, opts, childOpts)
+  }
+  child.unref()
 }
 
 module.exports.strSearch = function( str, query ){

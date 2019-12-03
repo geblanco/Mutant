@@ -2,6 +2,7 @@
 
 const router   = require('electron-router')('SYSTEMS_APPS')
 const requireNoCache = require('require-no-cache')
+const { assign } = require('lodash')
 // Real applications
 let _internalApps = {}
 
@@ -42,6 +43,17 @@ function _reloadApplication( app ){
 	}else{
 		global.Logger.log('[LOADER] Unknown application "' + app + '"')
 	}
+}
+
+// Todo: sync on start, just as native apps do
+function _mergeWithDatabase( app, callback ){
+	global.db.getMainDB().findOne({ exec: app.wrapper.exec }, (err, doc) => {
+		if( err ) return callback(err)
+		// ToDo := Two way merge, if app is updated but not DB?
+		// assign(app, JSON.parse(JSON.stringify(doc)))
+		console.log('assigning', app.wrapper, JSON.parse(JSON.stringify(doc)))
+		callback(null, app)
+	})
 }
 
 // ************************************

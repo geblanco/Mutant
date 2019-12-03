@@ -11,7 +11,7 @@ const BrowsersDB = require('browsers-db')
 
 let databases = {}
 let browsersDB = null
-let mainDb = { name: 'dbMain', query: (q,cb)=>{cb()} }
+let mainDb = { name: 'dbMain', query: (q,cb)=>{ cb() } }
 let unresolved = []
 
 let _start = ( main, browsers, end ) => {

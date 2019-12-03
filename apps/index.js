@@ -4,7 +4,7 @@
   globalizes app{ utils, URL_REGEX }
 */
 
-'use strict';
+'use strict'
 
 const { uniqBy } = require('lodash')
 const _systemApps = require( global.upath.join( __dirname, 'system', 'index' ) )
@@ -21,7 +21,7 @@ function _searchBrowserHistory( query, callback ){
   global.db.getBrowsersDB().query(query, ( err, results ) => {
 
     if( err ){
-      return callback( err );
+      return callback( err )
     }
 
     const ret = uniqBy(results, ( a ) => a.title )
@@ -37,53 +37,63 @@ function _lateAppend( err, results ){
 
   if( !err && results && results.length){
     // Send data back to UI
-    //Logger.log('[APP LOADER]', 'Late Append', results.length, results);
-    router.send('UI::AppendToView', results);
+    Logger.log('[APP LOADER]', 'Late Append', results.length)
+    router.send('UI::AppendToView', results)
   }else{
-    Logger.log('[APP LOADER]', 'Late Append failed', err);
+    Logger.log('[APP LOADER]', 'Late Append failed', err)
   }
+}
+
+function _updateScore(app){
+  global.db.getMainDB().findOne({ name: app.name }, (err, doc) => {
+    if( err ) return
+    if( doc === null ) return
+    doc.score += 1
+    doc.save()
+    Logger.log('[APP LOADER] New app score', JSON.parse(JSON.stringify(doc)))
+  })
 }
 
 function _registerEvents( callback ){
 
   router.on('launchApp', ( data ) => {
-    //Logger.log('[APP LOADER]', data.app);
+    _updateScore(data.app)
+    // Logger.log('[APP LOADER]', data.app)
     // TODO => Type check should not be against undefined but a type
     if( '_native_' === data.app.type ){
-      Logger.log('[APP LOADER] for spawner', data.app, data.query);
-      global.app.utils.spawn( data.app.exec );
+      Logger.log('[APP LOADER] for spawner', data.app, data.query)
+      global.app.utils.spawn( data.app.exec )
     }else{
-      _systemApps.launchApp( data.app.exec, data.app, data.query );
+      _systemApps.launchApp( data.app.exec, data.app, data.query )
     }
-  });
+  })
 
   router.get('query', ( req, res ) => {
     Logger.log('[APP LOADER]', 'query', req.params[0])
-    let query = req.params[0];
-    let matches = [];
+    let query = req.params[0]
+    let matches = []
 
     if( query !== '' && query !== ' '){
   
       // Internal apps: Preferences, Quit, Url
-      matches = matches.concat( _systemApps.searchApp( query, _lateAppend ) );
+      matches = matches.concat( _systemApps.searchApp( query ) )
       // Native apps: User installed applications
-      matches = matches.concat( _nativeApps.searchApp( query, _lateAppend ) );
+      matches = matches.concat( _nativeApps.searchApp( query ))
       // Broswser History files
-      _searchBrowserHistory( query, _lateAppend)
+      _searchBrowserHistory( query, _lateAppend )
 
     }
     // If nothing was found, just insert netSearch option
     if( matches.length < 2 ){
-      matches.push( _systemApps.getInternalApp('netSearch') );
+      matches.push( _systemApps.getInternalApp('netSearch') )
     }
     Logger.log('[APP LOADER]', 'Sending back', matches.length)
-    res.json( null, matches );
+    res.json( null, matches )
 
-    matches = null;
-
+    matches = null
   })
 
-  callback();
+  callback()
 }
 
 function _start( callback ){
@@ -96,10 +106,10 @@ function _start( callback ){
 
   ], ( err ) => {
 
-    Logger.log('[APP LOADER] Done starting modules', (err?err:''));
-    callback( err );
+    Logger.log('[APP LOADER] Done starting modules', (err?err:''))
+    callback( err )
 
-  });
+  })
 }
 
 module.exports = {
