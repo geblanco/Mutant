@@ -50,7 +50,8 @@ function _updateScore(app){
     if( doc === null ) return
     doc.score += 1
     doc.save()
-    Logger.log('[APP LOADER] New app score', JSON.parse(JSON.stringify(doc)))
+    let plainDoc = JSON.parse(JSON.stringify(doc))
+    Logger.log(`[APP LOADER] New app score (${plainDoc.name} = ${plainDoc.score})`)
   })
 }
 

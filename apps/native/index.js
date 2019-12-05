@@ -2,6 +2,7 @@
 
 const linuxApps = require('linux-apps-cache')
 const { defaults } = require('lodash')
+let liveCursor = null
 var nativeApps = []
 const defaultProps = {
   icon: 'application.png',
@@ -35,6 +36,16 @@ function _updateApps(database, apps, callback){
     }, [])
     database.save(unsavedApps, callback)
   })
+}
+
+function _setupDBListener(){
+  let database = global.db.getMainDB()
+  if( liveCursor === null ){
+    liveCursor = database.find({ type: '_native_' }).live()
+    database.on('liveQueryUpdate', () => {
+      nativeApps = JSON.parse( JSON.stringify(liveCursor.res) )
+    })
+  }
 }
 
 function _fetchApps(database){
@@ -80,6 +91,7 @@ function _start( callback ){
   // skip cache file, restore apps on every refresh
   linuxApps.init(true, _indexCallback, _indexCallback)
   linuxApps.setWatchCallback(_indexCallback)
+  _setupDBListener()
 }
 
 function _searchApp( query ){
