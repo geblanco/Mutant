@@ -12,7 +12,7 @@ const defaultProps = {
   type: '_native_'
 }
 
-function _removeFromDB(database, apps, callback){
+function removeFromDB(database, apps, callback){
   database
     .find({ type: '_native_', name: { $nin: apps.map( a => a.name ) } })
     .exec(( err, docs ) => {
@@ -21,7 +21,7 @@ function _removeFromDB(database, apps, callback){
     })
 }
 
-function _updateApps(database, apps, callback){
+function updateDB(database, apps, callback){
   database.find({ type: '_native_' }, ( err, docs ) => {
     if( err ) return callback(err)
     // Update every application with the new apps
@@ -38,7 +38,31 @@ function _updateApps(database, apps, callback){
   })
 }
 
-function _setupDBListener(){
+function fetchAppsFromDB(database){
+  database.find({ type: '_native_' }, (err, docs) => {
+    if( err ) return
+    nativeApps = JSON.parse( JSON.stringify(docs) )
+  })
+}
+
+function syncAppsWithDB(apps){
+  let database = global.db.getMainDB()
+  async.waterfall([
+    // Remove outdated applications
+    removeFromDB.bind(null, database, apps),
+    // Update stored applications and save unstored applications
+    updateDB.bind(null, database, apps)
+  ], (err) => {
+    if( err ) {
+      Logger.log('[NATIVE APPS] Error while syncing apps', err)
+      return
+    }
+    Logger.log('[NATIVE APPS] Sync apps completed')
+    fetchAppsFromDB(database)
+  })
+}
+
+function setupDBListener(){
   let database = global.db.getMainDB()
   if( liveCursor === null ){
     liveCursor = database.find({ type: '_native_' }).live()
@@ -48,31 +72,7 @@ function _setupDBListener(){
   }
 }
 
-function _fetchApps(database){
-  database.find({ type: '_native_' }, (err, docs) => {
-    if( err ) return
-    nativeApps = JSON.parse( JSON.stringify(docs) )
-  })
-}
-
-function _syncWithDB(apps){
-  let database = global.db.getMainDB()
-  async.waterfall([
-    // Remove outdated applications
-    _removeFromDB.bind(null, database, apps),
-    // Update stored applications and save unstored applications
-    _updateApps.bind(null, database, apps)
-  ], (err) => {
-    if( err ) {
-      Logger.log('[NATIVE APPS] Error while syncing apps', err)
-      return
-    }
-    Logger.log('[NATIVE APPS] Sync apps completed')
-    _fetchApps(database)
-  })
-}
-
-function _indexCallback(err, apps, callback=()=>{}){
+function indexAppsCallback(err, apps, callback=()=>{}){
   if (err) {
     return callback( err )
   }
@@ -84,17 +84,17 @@ function _indexCallback(err, apps, callback=()=>{}){
   })
   apps = apps.filter(app => app.hasOwnProperty('exec'))
   nativeApps = apps
-  _syncWithDB(nativeApps)
+  syncAppsWithDB(nativeApps)
 }
 
-function _start( callback ){
+function start( callback ){
   // skip cache file, restore apps on every refresh
-  linuxApps.init(true, _indexCallback, _indexCallback)
-  linuxApps.setWatchCallback(_indexCallback)
-  _setupDBListener()
+  linuxApps.init(true, indexAppsCallback, indexAppsCallback)
+  linuxApps.setWatchCallback(indexAppsCallback)
+  setupDBListener()
 }
 
-function _searchApp( query ){
+function searchApp( query ){
 
   return nativeApps.filter(( app ) => {
     return ( global.app.utils.strSearch( app.name, query ) !== -1 )
@@ -102,6 +102,6 @@ function _searchApp( query ){
 }
 
 module.exports = {
-    start       : _start
-  , searchApp   : _searchApp
+    start       : start
+  , searchApp   : searchApp
 }
