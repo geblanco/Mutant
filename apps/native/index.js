@@ -88,6 +88,7 @@ function indexAppsCallback(err, apps, callback=()=>{}){
 }
 
 function start( callback ){
+  linuxApps.addThemeForIconLookup(global.settings.get('theme'))
   // skip cache file, restore apps on every refresh
   linuxApps.init(true, indexAppsCallback, indexAppsCallback)
   linuxApps.setWatchCallback(indexAppsCallback)
