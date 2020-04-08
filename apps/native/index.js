@@ -17,25 +17,16 @@ function removeFromDB(database, apps, callback){
     .find({ type: '_native_', name: { $nin: apps.map( a => a.name ) } })
     .exec(( err, docs ) => {
       if( err ) return callback(err)
+      Logger.log(`[NATIVE APPS] Cleaning ${docs.length} old apps`)
       async.each( docs, ( doc, cb ) => { doc.remove( cb ) }, callback)
     })
 }
 
 function updateDB(database, apps, callback){
-  database.find({ type: '_native_' }, ( err, docs ) => {
-    if( err ) return callback(err)
-    // Update every application with the new apps
-    // Save unstored ones
-    // by now, only save apps not present in db
-    let docNames = docs.map(a => a.name)
-    let unsavedApps = apps.reduce((acc, app) => {
-      if( docNames.indexOf(app.name) === -1 ){
-        acc.push(app)
-      }
-      return acc
-    }, [])
-    database.save(unsavedApps, callback)
-  })
+  // Update apps, saving the ones not present
+  async.each(apps, (app, cb) => {
+    database.update({ type: '_native_', name: app.name }, app, { upsert: true }, cb)
+  }, callback)
 }
 
 function fetchAppsFromDB(database){
