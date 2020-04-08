@@ -18,7 +18,7 @@ class BrowserHistory extends AppBase {
 
 	exec( ex, query ) {
 		// Unwrap object, link is on subtext
-		let q = exec.text
+		let q = ex.text
 		let reg = /((http|ftp|https)\:\/\/)(www\.)?|(www\.)([^\.]*)/i
 		if( !reg.test( q ) ){
 			// Lack starting www....

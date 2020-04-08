@@ -38,7 +38,8 @@ var proto = {
     type: '_system_',
     scut: '',
     selected: false,
-    launching: false
+    launching: false,
+    score: 0
   },
 
   initialize: function( model ){
@@ -69,6 +70,7 @@ var proto = {
       icon: this.get('icon'),
       exec: this.get('exec'),
       type: this.get('type'),
+      score: this.get('score'),
       location: this.get('location')
     })
   }

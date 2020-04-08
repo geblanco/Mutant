@@ -14,6 +14,7 @@ const exp = {
     exec: { type: String, index: true, default: '' },
     icon: { type: String, default: '' },
     data: { type: String, default: '' },
+    score:{ type: Number, default: 0 },
     type: { type: String, index: true, default: '_system_' },
     regex0: { type: RegExp, default: new RegExp('(?!)') },
     regex1: { type: RegExp, default: new RegExp('(?!)') }
