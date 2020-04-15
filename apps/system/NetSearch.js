@@ -17,7 +17,7 @@ class NetSearch extends AppBase {
   }
 
   exec( ex, query ){
-    query = 'https://www.google.com/search?q=' + query
+    query = 'https://www.google.com/search?q=' + encodeURIComponent(query)
     global.app.utils.spawn( 'xdg-open', [query] )
   }
 }
