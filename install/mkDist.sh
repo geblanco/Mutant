@@ -1,25 +1,24 @@
 #!/bin/bash
 
-if [[ -d ./dist ]]; then
-  rm -rf ./dist
+dist_dir=${1:-./dist}
+desktop_file_path=${dist_dir}/mutant.desktop
+version=$(node -p "require('./package.json').version")
+
+if [[ ! -d $dist_dir ]]; then
+  mkdir -p $dist_dir
 fi
 
-mkdir ./dist && cd ./dist
+echo "[Desktop Entry]" > ${desktop_file_path}
+echo "Encoding=UTF-8" >> ${desktop_file_path}
+echo "Version=1.0" >> ${desktop_file_path}
+echo "Name=mutant" >> ${desktop_file_path}
+echo "Comment=Productivity Launcher" >> ${desktop_file_path}
+echo "Exec=/opt/mutant/mutant" >> ${desktop_file_path}
+echo "Terminal=false" >> ${desktop_file_path}
+echo "Type=Application" >> ${desktop_file_path}
+echo "Categories=Utility;" >> ${desktop_file_path}
 
-echo "[Desktop Entry]" > mutant.desktop
-echo "Encoding=UTF-8" >> mutant.desktop
-echo "Version=1.0" >> mutant.desktop
-echo "Name=mutant" >> mutant.desktop
-echo "Comment=Productivity Launcher" >> mutant.desktop
-echo "Exec=/opt/mutant/mutant" >> mutant.desktop
-echo "Terminal=false" >> mutant.desktop
-echo "Type=Application" >> mutant.desktop
-echo "Categories=Utility;" >> mutant.desktop
-
-# TODO copy icon to icons folder
-version=$(node -p "require('../package.json').version")
-
-../node_modules/electron-packager/cli.js ../ mutant \
+./node_modules/electron-packager/cli.js ./ mutant \
   --platform=linux \
   --arch=x64 \
   --electron-version=$(electron -v | cut -c 2-) \
@@ -28,12 +27,12 @@ version=$(node -p "require('../package.json').version")
   --ignore="install" \
   --ignore="Model.md" \
   --version-string.FileDescription="Mutant" \
-  --version-string.FileVersion="$version" \
-  --version-string.ProductVersion="$version" \
+  --version-string.FileVersion="${version}" \
+  --version-string.ProductVersion="${version}" \
   --version-string.ProductName="mutant" \
-  --app-version="$version" \
+  --app-version="${version}" \
+  --out="${dist_dir}" \
   --overwrite
 
-mv mutant-linux-x64 mutant
+mv ${dist_dir}/mutant-linux-x64 ${dist_dir}/mutant
 
-cd ..
