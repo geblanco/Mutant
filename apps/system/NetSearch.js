@@ -1,5 +1,6 @@
 'use strict';
 
+const { openExternal } = require('electron').shell
 const AppBase = require(global.upath.joinSafe(__dirname, 'AppBase'))
 
 const defaultWrapper = {
@@ -18,7 +19,9 @@ class NetSearch extends AppBase {
 
   exec( ex, query ){
     query = 'https://www.google.com/search?q=' + encodeURIComponent(query)
-    global.app.utils.spawn( 'xdg-open', [query] )
+    // When browser option is added this will fail, only opening the default browser
+    openExternal(query)
+    // global.app.utils.spawn( 'xdg-open', [query] )
   }
 }
 

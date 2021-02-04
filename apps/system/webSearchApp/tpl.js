@@ -20,6 +20,7 @@ module.exports = function( app ){
 
   let tpl = `/************** AUTO GENERATED ***************/
     'use strict';
+    const { openExternal } = require('electron').shell
     const AppBase = require(global.upath.joinSafe(global.upath.resolve(__dirname, '..'), 'AppBase'))
 
     const _utils   = global.app.utils
@@ -54,7 +55,7 @@ module.exports = function( app ){
         // url can have various values
         _url.split('|')
             .map(str => str + (query.split(' ')).join('+'))
-            .forEach(q => _utils.spawn('xdg-open', [q]))
+            .forEach(openExternal)
       }
     }
 

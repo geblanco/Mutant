@@ -1,5 +1,6 @@
 'use strict'
 
+const { openExternal } = require('electron').shell
 const AppBase = require(global.upath.joinSafe(__dirname, 'AppBase'))
 
 const defaultWrapper = {
@@ -25,7 +26,7 @@ class BrowserHistory extends AppBase {
 			q = 'http://' + q;
 		}
 
-		global.app.utils.spawn( 'xdg-open', [q] )
+		openExternal(q)
 	}
 
 	match(query) {

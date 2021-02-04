@@ -7,9 +7,9 @@
   "refresh": "./Refresh",
   "calculator": "./Calculator",
   "preferences": "./Preferences",
+  "aurSearch": "webSearchApp/aurSearch",
   "githubSearch": "webSearchApp/githubSearch",
-  "wikiSearch": "webSearchApp/wikiSearch",
-  "youtubeSearch": "webSearchApp/youtubeSearch",
   "bitbucketSearch": "webSearchApp/bitbucketSearch",
-  "aurSearch": "webSearchApp/aurSearch"
+  "wikiSearch": "webSearchApp/wikiSearch",
+  "youtubeSearch": "webSearchApp/youtubeSearch"
 }
