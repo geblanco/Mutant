@@ -27,7 +27,7 @@
     "librsvg": "~0.7.0",
     "linux-apps-cache": "git+https://github.com/m0n0l0c0/linux-apps-cache.git",
     "linvodb3": "git+https://github.com/m0n0l0c0/linvodb3.git",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.20",
     "medeadown": "~1.1.9",
     "mkdirp": "~0.5.1",
     "require-no-cache": "^0.2.1",
