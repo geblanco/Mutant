@@ -16,7 +16,7 @@
   "dependencies": {
     "async": "~2.6.0",
     "backbone": "~1.3.3",
-    "browsers-db": "^1.0.3",
+    "browsers-db": "1.1.0",
     "commander": "~2.15.1",
     "electron-router": "^0.4.2",
     "electron-settings": "git+https://github.com/m0n0l0c0/electron-settings.git",
