@@ -86,3 +86,5 @@ module.exports = function( obj ){
   }
   return ret
 }
+
+module.exports.proto = proto
