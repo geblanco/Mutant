@@ -37,8 +37,9 @@ class Calculator extends AppBase {
   }
 
   exec( ex, query ) {
-    global.Logger.log('[CALC] Copying calculations to clipboard:', query)
-    clipboard.writeText(query)
+    let toWrite = String(this.currentCalc.rightSide ? this.currentCalc.rightSide : query)
+    global.Logger.log('[CALC] Copying calculations to clipboard:', toWrite)
+    clipboard.writeText(toWrite)
   }
 
   match( query ) {
